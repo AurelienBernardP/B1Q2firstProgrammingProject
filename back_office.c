@@ -310,3 +310,21 @@ static int diagonal2_check_win(board *boardx){
 return 0;// if no player has won yet
 }//end diagonal2_check_win.
 
+int get_board_nb_rows(board *boardx){
+  assert(boardx != NULL);
+  return boardx->nb_rows;
+}
+
+int get_board_nb_columns(board *boardx){
+   assert(boardx != NULL);
+   return boardx->nb_columns;
+}
+
+int get_board_disk_value(board *boardx, unsigned int row, unsigned int column){
+   assert(boardx != NULL);
+   if(column >= boardx->nb_columns || row >= boardx->nb_rows){
+      printf("error: Disk value couldnt be fetched\n");
+      return(-1);
+   }
+   return boardx->board_matrix[row][column];
+}
