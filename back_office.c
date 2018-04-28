@@ -6,13 +6,8 @@
 #include "IA.h"
 
 #define MIN_BOARD_SIZE 4
-#define MAX_BOARD_SIZE 20
+#define MAX_BOARD_SIZE 25
 
-struct board_t{
-    unsigned short nb_rows;
-    unsigned short nb_columns;
-    unsigned short **board_matrix;
-};
 
 typedef enum{
 empty, yellow, red,

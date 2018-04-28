@@ -5,8 +5,12 @@
  * Initialization of opaque type board
  *
  */
-struct board_t;
-typedef struct board_t board;
+typedef struct board_t{
+    unsigned short nb_rows;
+    unsigned short nb_columns;
+    unsigned short **board_matrix;
+    unsigned short player_moves;
+}board_model;
 
 /**
  * destroy_board
