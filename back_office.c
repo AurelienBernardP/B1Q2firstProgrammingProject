@@ -14,13 +14,13 @@ empty, yellow, red,
 }piece_color;
 
 
-int play_turn(board *boardx, GtkWidget *pTable, GtkWidget *buttons, unsigned short int *nb_turns){
+int play_turn(board_model *boardx, GtkWidget *pTable, GtkWidget *buttons, GtkWidget ***image_table, unsigned short column){
    assert(boardx != NULL && pTable != NULL && buttons != NULL && nb_turns != NULL);
   
   int wining_player = 0;
   int error_code = 0;
    add_pawn(boardx, 1, column);
-   error_code = modif_board_gui(pTable, boardx, buttons);
+   error_code = redraw_board(boardx, pTable, GtkWidget **image_table);
    if(error_code){
       return 1;
    }
@@ -35,8 +35,9 @@ int play_turn(board *boardx, GtkWidget *pTable, GtkWidget *buttons, unsigned sho
       default:
          //continue, NOP
     }
+   boardx->player_moves++;
    IA_play(boardx);
-   error_code = modif_board_gui(pTable, boardx, buttons);
+   error_code = redraw_board(pTable, boardx, buttons);
    if(error_code){
       return 1;
    }
@@ -48,12 +49,13 @@ int play_turn(board *boardx, GtkWidget *pTable, GtkWidget *buttons, unsigned sho
          //player one wining popup
       default:
          //continue, NOP
-    }    
+    }
+
    return 0; 
 }
 
 
-static void destroy_board(board *boardx){
+static void destroy_board(board_model *boardx){
    if(boardx == NULL){
       return;
    }
@@ -70,24 +72,20 @@ return;
 }
 
 
-board *init_board(unsigned short rows, unsigned short columns){
-
-  
+board_model *init_board(unsigned short rows, unsigned short columns){
    
-   if (columns < MIN_BOARD_SIZE || rows < MIN_BOARD_SIZE)
-   {
+   if (columns < MIN_BOARD_SIZE || rows < MIN_BOARD_SIZE){
     printf("dimenssions entered can not be smaller than 4\n");
     return NULL;
    }
-   if (columns > MAX_BOARD_SIZE || rows > MAX_BOARD_SIZE)
-   {
+   if (columns > MAX_BOARD_SIZE || rows > MAX_BOARD_SIZE){
       printf("dimenssions entered can not be bigger than 20\n");
       return NULL;
    }
-   board *boardx = malloc(sizeof(board));
+   board_model *boardx = malloc(sizeof(board));
    if (boardx==NULL)
    {
-      printf("ERROR: Board could not be created (mem allocation)\n");
+      printf("ERROR: board_model could not be created (mem allocation)\n");
       return NULL;
    }
 
@@ -97,21 +95,21 @@ board *init_board(unsigned short rows, unsigned short columns){
    boardx->board_matrix = malloc(boardx->nb_rows*sizeof(unsigned short int*));
       if(!boardx->board_matrix)
       {
-         printf("ERROR: Board could not be created (mem allocation)\n");
+         printf("ERROR: board_model could not be created (mem allocation)\n");
          return NULL;
       }
       for(int r = 0; r < boardx->nb_rows;r++){
          boardx->board_matrix[r] = calloc(boardx->nb_columns, sizeof(unsigned short));
          if(!boardx->board_matrix[r])
          {
-            printf("ERROR: Board could not be created (mem allocation)\n");
+            printf("ERROR: board_model could not be created (mem allocation)\n");
             return NULL;
          }
       }
 return boardx;
 }
 
-int add_pawn(board *boardx, unsigned int player, unsigned short column){
+int add_pawn(board_model *boardx, unsigned int player, unsigned short column){
    assert(boardx != NULL && boardx->board_matrix != NULL);
    
    int i = boardx->nb_rows;
@@ -126,7 +124,7 @@ int add_pawn(board *boardx, unsigned int player, unsigned short column){
 return 0;
 }
 
-int check_win(board *boardx){
+int check_win(board_model *boardx){
    assert(boardx != NULL);
    int wining_player = 0;
 
@@ -150,14 +148,7 @@ int check_win(board *boardx){
 return wining_player;
 }
 
-static void add_one_turn(unsigned short int *nb_turns){
-   assert(nb_turns != NULL)
-
-   *nb_turns++;
-   return;
-}
-
-static int horizontal_check_win(board *boardx){
+static int horizontal_check_win(board_model *boardx){
    assert(boardx != NULL);
    
    unsigned short player_1_count = 0;
@@ -189,10 +180,10 @@ static int horizontal_check_win(board *boardx){
         ++y; 
       }
    }//end for, horizontal check
-return 0; //after board has been checked horizontaly and no player has won yet, 0 returned
+return 0; //after board_model has been checked horizontaly and no player has won yet, 0 returned
 }
 
-static int vertical_check_win(board *boardx){
+static int vertical_check_win(board_model *boardx){
    assert(boardx != NULL);
    
    unsigned short player_1_count = 0;
@@ -222,10 +213,10 @@ static int vertical_check_win(board *boardx){
         }//return 2 if player 2(IA) wins 
       }
    }//end for, vertical check
-return 0; //board has been checked verticaly and no player has won yet, 0 returned
+return 0; //board_model has been checked verticaly and no player has won yet, 0 returned
 }
 
-static int diagonal1_check_win(board *boardx){
+static int diagonal1_check_win(board_model *boardx){
    assert(boardx != NULL);
    
    unsigned short player_1_count = 0;
@@ -288,7 +279,7 @@ static int diagonal1_check_win(board *boardx){
 return 0; //no player has won yet
 }//end diagonal 1 check
 
-static int diagonal2_check_win(board *boardx){
+static int diagonal2_check_win(board_model *boardx){
    assert(boardx != NULL);
 
    unsigned short player_1_count = 0;
@@ -351,17 +342,17 @@ static int diagonal2_check_win(board *boardx){
 return 0;// if no player has won yet
 }//end diagonal2_check_win.
 
-int get_board_nb_rows(board *boardx){
+int get_board_nb_rows(board_model *boardx){
   assert(boardx != NULL);
   return boardx->nb_rows;
 }
 
-int get_board_nb_columns(board *boardx){
+int get_board_nb_columns(board_model *boardx){
    assert(boardx != NULL);
    return boardx->nb_columns;
 }
 
-int get_board_disk_value(board *boardx, unsigned int row, unsigned int column){
+int get_board_disk_value(board_model *boardx, unsigned int row, unsigned int column){
    assert(boardx != NULL);
    if(column >= boardx->nb_columns || row >= boardx->nb_rows){
       printf("error: Disk value couldnt be fetched\n");
@@ -370,7 +361,7 @@ int get_board_disk_value(board *boardx, unsigned int row, unsigned int column){
    return boardx->board_matrix[row][column];
 }
 
-int column_is_full(board *boardx ,unsigned int nb_column){
+int column_is_full(board_model *boardx ,unsigned int nb_column){
    assert(boardx != NULL);
 
    if(boardx->board_matrix[0][i] != 0){

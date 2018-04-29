@@ -25,8 +25,8 @@ int main(int argc, char **argv){
    while((val = getopt(argc, argv, optstring)) !=EOF){
       switch(val){
          case 'f':
-            printf("path to top score file is: %s\n", optarg);
             strcpy(top_score_path, optarg);
+            printf("path to top score file is: %s\n", top_score_path);
             break;
           case 'n':
             printf("Have fun and Good luck %s!!\n",optarg);
@@ -40,22 +40,21 @@ int main(int argc, char **argv){
                   printf("error computing nb lines\n");
                   return 0;
                }
-            }
-
-            break;
+             }
+             break;
           case 'h':
-            printf("Help:\n   -f[write file path]\n   -n[enter player's name]\n   -l /-c[number of lines/columns]",);
-            break;
+             printf("Help:\n   -f[write file path]\n   -n[enter player's name]\n   -l /-c[number of lines/columns]",);
+             break;
           case 'c':
-            columns_in_board = 0;
-            for (int i = 0; i < strlen(optarg); ++i){
-               columns_in_board*=10;
-               columns_in_board += (optarg[i] - '0');
-               if((optarg[i] - '0') > 9){
-                  printf("error computing nb columns\n");
-                  return 0;
-               }
-            }
+             columns_in_board = 0;
+             for (int i = 0; i < strlen(optarg); ++i){
+                columns_in_board*=10;
+                columns_in_board += (optarg[i] - '0');
+                if((optarg[i] - '0') > 9){
+                   printf("error computing nb columns\n");
+                   return 0;
+                }
+             }
 
             break;
          case '?':
@@ -78,14 +77,18 @@ int main(int argc, char **argv){
    GtkWidget *menu;
    GtkWidget *megabox;
 
-   board *game_board = init_board(lines_in_board, columns_in_board)
+   board_model *game_board = init_board(lines_in_board, columns_in_board);
+   board_vue *vue = // init vue board function 
+   board_controler *controler = create_board_controler(game_board, board_vue *Bv){;
 
 //making_buttons and putting in a container (Zone 3)
-GtkWidget *buttons_box = gtk_hbox_new(TRUE, 0);
+   GtkWidget *buttons_box = gtk_hbox_new(TRUE, 0);
    GtkWidget column_button[] = malloc(columns_in_board * sizeof(GtkWidget));
   
+
    for (int i = 0; i < columns_in_board; ++i){
-     column_button[i] =  gtk_button_new_with_label("");
+     controler->buttons[i] =  gtk_button_new_with_label("");
+     g_signal_connect(G_OBJECT(controler->buttons[i]), "clicked", G_CALLBACK(move_made), controler);
    }
 
    

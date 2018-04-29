@@ -8,15 +8,15 @@
 typedef struct vue_t{
    GtkWidget ***image_table;
    board *board_model;
-   GtkWidget *board_vue;
-}
+   GtkWidget *gtk_table;
+}board_vue;
 
 GtkWidget *make_window();
 
-GtkWidget *create_zone1(board *boardx);
+board_vue *create_board_vue(board_model* boardx);
 
-GtkWidget *create_zone2(GtkWidget *window);
+GtkWidget *create_menu(GtkWidget *window);
 
-
+int redraw_board(board_model *boardx, GtkWidget *pTable);
 
 #endif

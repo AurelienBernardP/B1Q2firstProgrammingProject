@@ -12,6 +12,12 @@ typedef struct board_t{
     unsigned short player_moves;
 }board_model;
 
+
+
+
+
+int play_turn(board_model *boardx, GtkWidget *pTable, GtkWidget *buttons, GtkWidget ***image_table, unsigned short column);
+
 /**
  * destroy_board
  *
@@ -26,7 +32,7 @@ typedef struct board_t{
  *      Void function, no return.
  *
  */
-static void destroy_board(board *boardx);
+static void destroy_board(board_model *boardx);
 /**
  * *init_board
  *
@@ -44,7 +50,7 @@ static void destroy_board(board *boardx);
  *     NULL pointer on error.
  *
  */
-board *init_board(char rows, char columns);
+board_model *init_board(char rows, char columns);
 
 /**
  * add_pawn
@@ -65,7 +71,7 @@ board *init_board(char rows, char columns);
  *     0 on success.
  *
  */
-int add_pawn(board *boardx, unsigned int player, unsigned short column);
+int add_pawn(board_model *boardx, unsigned int player, unsigned short column);
 
 /**
  * check_win
@@ -83,7 +89,7 @@ int add_pawn(board *boardx, unsigned int player, unsigned short column);
  *  
  *
  */
-int check_win(board *boardx);
+int check_win(board_model *boardx);
 
 /**
  * horizontal_check_win
@@ -101,7 +107,7 @@ int check_win(board *boardx);
  *  
  *
  */
-static int horizontal_check_win(board *boardx);
+static int horizontal_check_win(board_model *boardx);
 
 /**
  * vertical_check_win
@@ -119,7 +125,7 @@ static int horizontal_check_win(board *boardx);
  *  
  *
  */
-static int vertical_check_win(board *boardx);
+static int vertical_check_win(board_model *boardx);
 
 /**
  * diagonal1_check_win
@@ -137,7 +143,7 @@ static int vertical_check_win(board *boardx);
  *  
  *
  */
-static int diagonal1_check_win(board *boardx);
+static int diagonal1_check_win(board_model *boardx);
 
 /**
  * diagonal2_check_win
@@ -155,12 +161,14 @@ static int diagonal1_check_win(board *boardx);
  *  
  *
  */
-static int diagonal2_check_win(board *boardx);
+static int diagonal2_check_win(board_model *boardx);
 
-int get_board_nb_rows(board *boardx);
+int get_board_nb_rows(board_model *boardx);
 
-int get_board_nb_columns(board *boardx);
+int get_board_nb_columns(board_model *boardx);
 
-int get_board_disk_value(board *boardx, unsigned int row, unsigned int column);
+int get_board_disk_value(board_model *boardx, unsigned int row, unsigned int column);
+
+int column_is_full(board_model *boardx ,unsigned int nb_column);
 
 #endif

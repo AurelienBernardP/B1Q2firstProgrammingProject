@@ -16,18 +16,24 @@ GtkWidget *make_window(){
 return pF;
 }
 
-GtkWidget *create_zone1(board* boardx){
+board_vue *create_board_vue(board_model* boardx){
+   assert(boardx != NULL);
 
-  GtkWidget *pTable = gtk_table_new(get_board_nb_rows(boardx), get_board_nb_columns(boardx), TRUE);//has to be changed to numbers in board, tis is just a test
-  GtkWidget ***image_table; 
-  image_table = malloc(get_board_nb_rows(boardx) * sizeof(GtkWidget**));
-  if (!image_table){
+  board_vue *board_v = malloc(sizeof(board_vue));
+  if (board_v == NULL){
+     printf("error alocating memory space for on screen board\n");
+     return NULL;
+  }
+  board_v->board_model = boardx;
+
+    board_v->image_table = malloc(get_board_nb_rows(boardx) * sizeof(GtkWidget**));
+  if (board_v->image_table){
      printf("memory allocation error for image loading\n");
      return NULL;
   }
   for (int i = 0; i < get_board_nb_rows(boardx); ++i){
-      image_table[i] = malloc(get_board_nb_columns(boardx) * sizeof(GtkWidget*));
-      if (image_table[i] == NULL){
+      board_v->image_table[i] = malloc(get_board_nb_columns(boardx) * sizeof(GtkWidget*));
+      if (board_v->image_table[i] == NULL){
         printf("memory allocation error for image loading\n");
         return NULL;
       }
@@ -35,20 +41,21 @@ GtkWidget *create_zone1(board* boardx){
 
   for (int i = 0; i < get_board_nb_rows(boardx); ++i){
      for (int j = 0; j < get_board_nb_columns(boardx); ++j){
-          image_table[i][j] = gtk_image_new_from_file("bleu.gif");
+          board_v->image_table[i][j] = gtk_image_new_from_file("bleu.gif");
      }
   }
+
+  board_v->gtk_table = gtk_table_new(get_board_nb_rows(boardx), get_board_nb_columns(boardx), TRUE);
+
   for (int i = 0; i < get_board_nb_rows(boardx); ++i){
      for (int j = 0; j < get_board_nb_columns(boardx); ++j){
-          gtk_table_attach(GTK_TABLE(pTable), image_table[i][j] ,j,(j+1),i,(i+1),GTK_EXPAND,GTK_EXPAND,0,0);
+          gtk_table_attach(GTK_TABLE(board_v->gtk_table), board_v->image_table[i][j] ,j,(j+1),i,(i+1),GTK_EXPAND,GTK_EXPAND,0,0);
      }
   }
-//free if posible
-return pTable;
+return board_v;
 }
 
-
-GtkWidget *create_zone2(GtkWidget *window){
+GtkWidget *create_menu(GtkWidget *window){
    assert(window != NULL);
    GtkWidget *menu_bar = gtk_menu_bar_new();
    GtkWidget *menu_partie = gtk_menu_new();
@@ -78,38 +85,9 @@ return menu_bar;
 }
 
 
-int modif_board_gui(GtkWidget *pTable, board *boardx, GtkWidget *buttons){
-   assert(window != NULL && boardx != NULL);
 
-   int error_code = 0;
-
-   error_code = modif_zone1(boardx, pTable);
-   if(error_code){
-      printf("Error updating the board\n");
-      return 1;
-   }
-   
-    modif_zone3(buttons,boardx);
-return 0;
-}
-
-static int modif_zone1(board *boardx,GtkWidget *pTable){
-   assert(boardx != NULL && pTable != NULL);
-
-    GtkWidget ***image_table;
-
-    image_table = malloc(get_board_nb_rows(boardx) * sizeof(GtkWidget**));
-    if (!image_table){
-       printf("memory allocation error for image loading\n");
-       return NULL;
-    }
-    for (int i = 0; i < get_board_nb_rows(boardx); ++i){
-      image_table[i] = malloc(get_board_nb_columns * sizeof(GtkWidget*));
-      if (image_table[i] == NULL){
-        printf("memory allocation error for image loading\n");
-        return NULL;
-      }
-   }
+int redraw_board(board_model *boardx, GtkWidget *pTable, GtkWidget ***image_table){
+   assert(boardx != NULL && pTable != NULL && image_table);
 
 	for (int i = 0; i < get_board_nb_rows(boardx); ++i){
 	   for (int j = 0; j < get_board_nb_columns(boardx); ++j){
@@ -142,13 +120,4 @@ static int modif_zone1(board *boardx,GtkWidget *pTable){
      }
   }
 return 0;
-}
-
-static void modif_zone3(GtkWidget buttons[], board *boardx){
-
-   for (int i = 0; i < get_board_nb_columns(boardx); ++i){
-     if(column_is_full(boardx ,i)){
-         buttons[i].sesitive = false
-     }
-   }
 }
