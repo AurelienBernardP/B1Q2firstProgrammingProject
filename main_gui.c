@@ -91,6 +91,8 @@ int main(int argc, char **argv){
      g_signal_connect(G_OBJECT(controler->buttons[i]), "clicked", G_CALLBACK(move_made), controler);
    }
 
+
+
    
    for (int i = 0; i < columns_in_board; ++i){
     gtk_box_pack_start(GTK_BOX(buttons_box), column_button[i], TRUE, TRUE, 0);
