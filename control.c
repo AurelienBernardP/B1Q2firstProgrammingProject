@@ -1,15 +1,18 @@
 #include "back_office.h"
 #include "GUI.h"
-#include "contol.h"
+#include "control.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+
 board_controler *create_board_controler(board_model *Bm, board_vue *Bv){
    assert(Bm != NULL && Bv != NULL);
 
-   board_controler board_c = malloc(board_controler);
+   board_controler *board_c = malloc(sizeof(board_controler));
    if (board_c == NULL){
    	printf("Error allocating memory space for board controler\n");
    	return NULL;
@@ -17,8 +20,8 @@ board_controler *create_board_controler(board_model *Bm, board_vue *Bv){
    board_c->bv = Bv;
    board_c->bm = Bm;
 
-   board_c->buttons = malloc(get_board_nb_columns(Bm) * sizeof(GtkWidget));
-   if(board_c->buttons = NULL;){
+   board_c->buttons = malloc(get_board_nb_columns(Bm) * sizeof(GtkWidget*));
+   if(board_c->buttons == NULL){
       printf("Error allocating memory space for buttons\n");
       return NULL;
    }
@@ -30,7 +33,7 @@ static void buttons_sesitivity_update(board_controler *board_c, board_model *boa
 
    for (int i = 0; i < get_board_nb_columns(boardx); ++i){
      if(column_is_full(boardx ,i)){
-         board_c->buttons[i].sesitive = false
+         board_c->buttons[i].sesitive = false;
      }
    }
    return;
@@ -55,7 +58,7 @@ void move_made(GtkWidget *button, gpointer data){
     return;
 }
 
-unsigned short find_column_clicked(board_controler *controler,GtkWidget *button){
+unsigned short find_column_clicked(board_controler *controler,GtkWidget **button){
     assert(controler  != NULL && button != NULL);
 
     unsigned short i = 0;

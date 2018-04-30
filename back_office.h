@@ -1,6 +1,10 @@
 
 #ifndef __MODEL__
 #define __MODEL__
+
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+
 /**
  * Initialization of opaque type board
  *
@@ -89,7 +93,7 @@ int add_pawn(board_model *boardx, unsigned int player, unsigned short column);
  *  
  *
  */
-int check_win(board_model *boardx);
+static int check_win(board_model *boardx);
 
 /**
  * horizontal_check_win

@@ -5,11 +5,11 @@
 #include <assert.h>
 #include "GUI.h"
 
-GtkWidget *make_window(){
+GtkWidget *make_window(board_model *boardx){
    
    GtkWidget *pF = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW(pF), "Puissance 4");
-   gtk_window_set_default_size(GTK_WINDOW(pF),(get_board_nb_rows*50), (get_board_nb_columns*50));
+   gtk_window_set_default_size(GTK_WINDOW(pF),(get_board_nb_rows(boardx)*50), (get_board_nb_columns(boardx)*50));
    g_signal_connect(G_OBJECT(pF), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 
@@ -107,7 +107,7 @@ int redraw_board(board_model *boardx, GtkWidget *pTable, GtkWidget ***image_tabl
            break;
 
         default:
-             return (-1)
+             return (-1);
      }
                gtk_table_attach(GTK_TABLE(pTable), image_table[i][j] ,j,(j+1),i,(i+1),GTK_EXPAND,GTK_EXPAND,0,0);
 

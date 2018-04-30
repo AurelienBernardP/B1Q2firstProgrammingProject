@@ -3,6 +3,8 @@
 #include <string.h>
 #include <assert.h>
 #include "back_office.h"
+#include "control.h"
+#include "GUI.h"
 #include "IA.h"
 
 #define MIN_BOARD_SIZE 4
@@ -17,8 +19,8 @@ empty, yellow, red,
 int play_turn(board_model *boardx, GtkWidget *pTable, GtkWidget *buttons, GtkWidget ***image_table, unsigned short column){
    assert(boardx != NULL && pTable != NULL && buttons != NULL && nb_turns != NULL);
   
-  int wining_player = 0;
-  int error_code = 0;
+   int wining_player = 0;
+   int error_code = 0;
    add_pawn(boardx, 1, column);
    error_code = redraw_board(boardx, pTable, GtkWidget **image_table);
    if(error_code){
@@ -35,7 +37,7 @@ int play_turn(board_model *boardx, GtkWidget *pTable, GtkWidget *buttons, GtkWid
       default:
          //continue, NOP
     }
-   boardx->player_moves++;
+   boardx->player_moves += 1;
    IA_play(boardx);
    error_code = redraw_board(pTable, boardx, buttons);
    if(error_code){
@@ -82,15 +84,15 @@ board_model *init_board(unsigned short rows, unsigned short columns){
       printf("dimenssions entered can not be bigger than 20\n");
       return NULL;
    }
-   board_model *boardx = malloc(sizeof(board));
-   if (boardx==NULL)
-   {
+   board_model *boardx = malloc(sizeof(board_model));
+   if (boardx == NULL){
       printf("ERROR: board_model could not be created (mem allocation)\n");
       return NULL;
    }
 
    boardx->nb_rows = rows;
    boardx->nb_columns = columns;
+   boardx->player_moves = 0;
 
    boardx->board_matrix = malloc(boardx->nb_rows*sizeof(unsigned short int*));
       if(!boardx->board_matrix)
@@ -124,26 +126,26 @@ int add_pawn(board_model *boardx, unsigned int player, unsigned short column){
 return 0;
 }
 
-int check_win(board_model *boardx){
+static int check_win(board_model *boardx){
    assert(boardx != NULL);
    int wining_player = 0;
 
-   horizontal_check_win(boardx);
+   wining_player = horizontal_check_win(boardx);
    if(wining_player){
       return wining_player;
    }
 
-   vertical_check_win(boardx);
+   wining_player = vertical_check_win(boardx);
    if(wining_player){
       return wining_player;
    }
 
-   diagonal1_check_win(boardx);
+   wining_player = diagonal1_check_win(boardx);
    if(wining_player){
       return wining_player;
    }
 
-   diagonal2_check_win(boardx);
+   wining_player = diagonal2_check_win(boardx);
 
 return wining_player;
 }
