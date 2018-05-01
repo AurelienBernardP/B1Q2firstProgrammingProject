@@ -9,16 +9,16 @@
 
 typedef struct vue_t{
    GtkWidget ***image_table;
-   board_model *board_model;
+   board_model *bm;
    GtkWidget *gtk_table;
 }board_vue;
 
 GtkWidget *make_window(board_model *boardx);
 
-board_vue *create_board_vue(board_model* boardx);
+board_vue *create_board_vue(board_model *boardx);
 
 GtkWidget *create_menu(GtkWidget *window);
 
-int redraw_board(board_model *boardx, GtkWidget *pTable, GtkWidget ***image_table);
+int redraw_board(board_model *boardx, GtkWidget *pTable, board_vue *bv);
 
 #endif

@@ -1,9 +1,10 @@
 #include<stdlib.h>
 #include<gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-//#include"back_office.h"
+
 #include <assert.h>
 #include "GUI.h"
+#include "back_office.h"
 
 GtkWidget *make_window(board_model *boardx){
    
@@ -24,11 +25,11 @@ board_vue *create_board_vue(board_model* boardx){
      printf("error alocating memory space for on screen board\n");
      return NULL;
   }
-  board_v->board_model = boardx;
+  board_v->bm = boardx;
 
     board_v->image_table = malloc(get_board_nb_rows(boardx) * sizeof(GtkWidget**));
-  if (board_v->image_table){
-     printf("memory allocation error for image loading\n");
+  if (board_v->image_table == NULL){
+     printf("memory allocation error for image loading 1\n");
      return NULL;
   }
   for (int i = 0; i < get_board_nb_rows(boardx); ++i){
@@ -86,38 +87,36 @@ return menu_bar;
 
 
 
-int redraw_board(board_model *boardx, GtkWidget *pTable, GtkWidget ***image_table){
-   assert(boardx != NULL && pTable != NULL && image_table);
-
+int redraw_board(board_model *boardx, GtkWidget *pTable, board_vue *bv){
+   assert(boardx != NULL && pTable != NULL && bv != NULL);
 	for (int i = 0; i < get_board_nb_rows(boardx); ++i){
 	   for (int j = 0; j < get_board_nb_columns(boardx); ++j){
+        switch(get_board_disk_value(boardx,i ,j)){
 
-     switch(get_board_disk_value(boardx,i ,j)){
+           case 0:
+              bv->image_table[i][j] = gtk_image_new_from_file("bleu.gif");
+              break;
 
-        case 0:
-          image_table[i][j] = gtk_image_new_from_file("bleu.gif");
-           break;
+           case 1:
+              bv->image_table[i][j] = gtk_image_new_from_file("jaune.gif");
+              break;
 
-        case 1:
-            image_table[i][j] = gtk_image_new_from_file("jaune.gif");
-           break;
+           case 2:
+              bv->image_table[i][j] = gtk_image_new_from_file("rouge.gif");
+              break;
 
-        case 2:
-             image_table[i][j] = gtk_image_new_from_file("rouge.gif");
-           break;
-
-        default:
-             return (-1);
+           default:
+              return (-1);
+        }
      }
-               gtk_table_attach(GTK_TABLE(pTable), image_table[i][j] ,j,(j+1),i,(i+1),GTK_EXPAND,GTK_EXPAND,0,0);
 
-	   }
-	}
+  }
+  for (int i = 0; i < get_board_nb_rows(boardx); ++i){
+     for (int j = 0; j < get_board_nb_columns(boardx); ++j){
+          gtk_table_attach(GTK_TABLE(bv->gtk_table), bv->image_table[i][j] ,j,(j+1),i,(i+1),GTK_EXPAND,GTK_EXPAND,0,0);
 
-   for (int i = 0; i < get_board_nb_rows(boardx); ++i){
-      for (int j = 0; j < get_board_nb_columns(boardx); ++j){
-          gtk_table_attach(GTK_TABLE(pTable), image_table[i][j] ,j,(j+1),i,(i+1),GTK_EXPAND,GTK_EXPAND,0,0);
      }
   }
+  gtk_widget_show_all(pTable);
 return 0;
 }

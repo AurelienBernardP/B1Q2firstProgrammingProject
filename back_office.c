@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
 #include "back_office.h"
 #include "control.h"
 #include "GUI.h"
@@ -16,48 +17,7 @@ empty, yellow, red,
 }piece_color;
 
 
-int play_turn(board_model *boardx, GtkWidget *pTable, GtkWidget *buttons, GtkWidget ***image_table, unsigned short column){
-   assert(boardx != NULL && pTable != NULL && buttons != NULL && nb_turns != NULL);
-  
-   int wining_player = 0;
-   int error_code = 0;
-   add_pawn(boardx, 1, column);
-   error_code = redraw_board(boardx, pTable, GtkWidget **image_table);
-   if(error_code){
-      return 1;
-   }
-   wining_player = check_win(boardx);
-   switch(wining_player){
-      case 1:
-          //player one wining popup
-          return 0;
-      case 2:
-         //player one wining popup
-         return 0;
-      default:
-         //continue, NOP
-    }
-   boardx->player_moves += 1;
-   IA_play(boardx);
-   error_code = redraw_board(pTable, boardx, buttons);
-   if(error_code){
-      return 1;
-   }
-   wining_player = check_win(boardx);
-   switch(wining_player){
-      case 1:
-          //player one wining popup
-      case 2:
-         //player one wining popup
-      default:
-         //continue, NOP
-    }
-
-   return 0; 
-}
-
-
-static void destroy_board(board_model *boardx){
+void destroy_board(board_model *boardx){
    if(boardx == NULL){
       return;
    }
@@ -113,41 +73,18 @@ return boardx;
 
 int add_pawn(board_model *boardx, unsigned int player, unsigned short column){
    assert(boardx != NULL && boardx->board_matrix != NULL);
-   
-   int i = boardx->nb_rows;
-   while(i<=0 && boardx->board_matrix[i][column] != 0){
+
+   int i = (boardx->nb_rows - 1);
+   while(i >= 0 && boardx->board_matrix[i][column] != 0){
       --i;
    }
-   if(i<0){
-/*        printf("player %ud, error this column is already full\n",player);*/
-      return 1;
+
+   if (i ==(-1)){
+     return (-1);// column is full
    }
    boardx->board_matrix[i][column] = player;
+
 return 0;
-}
-
-static int check_win(board_model *boardx){
-   assert(boardx != NULL);
-   int wining_player = 0;
-
-   wining_player = horizontal_check_win(boardx);
-   if(wining_player){
-      return wining_player;
-   }
-
-   wining_player = vertical_check_win(boardx);
-   if(wining_player){
-      return wining_player;
-   }
-
-   wining_player = diagonal1_check_win(boardx);
-   if(wining_player){
-      return wining_player;
-   }
-
-   wining_player = diagonal2_check_win(boardx);
-
-return wining_player;
 }
 
 static int horizontal_check_win(board_model *boardx){
@@ -168,7 +105,7 @@ static int horizontal_check_win(board_model *boardx){
             if(boardx->board_matrix[j][y] == 2){
                player_2_count++;
             }
-            if (boardx->board_matrix[j][y] == 2){
+            if (boardx->board_matrix[j][y] == 0){
                player_2_count = 0;
                player_1_count = 0;
             }
@@ -202,7 +139,7 @@ static int vertical_check_win(board_model *boardx){
             if(boardx->board_matrix[j][i] == 2){
                player_2_count++;
             }  
-            if (boardx->board_matrix[j][i] == 2){
+            if (boardx->board_matrix[j][i] == 0){
                player_2_count = 0;
                player_1_count = 0;
             }
@@ -236,7 +173,7 @@ static int diagonal1_check_win(board_model *boardx){
             if(boardx->board_matrix[y][j] == 2){
                player_2_count++;
             }  
-            if (boardx->board_matrix[y][j] == 2){
+            if (boardx->board_matrix[y][j] == 0){
                player_2_count = 0;
                player_1_count = 0;
             }
@@ -251,11 +188,11 @@ static int diagonal1_check_win(board_model *boardx){
       }
    }//end for, top left triangle of matrix has been checked for win
 
-   for (int i = 0; i < boardx->nb_columns; ++i){
+   for (int i = 0; i < boardx->nb_rows; ++i){
       int y = i;
       player_2_count = 0;
       player_1_count = 0;
-      for (int j = boardx->nb_rows; j >= 0 && y < boardx->nb_columns; --j){
+      for (int j = (boardx->nb_columns - 1); j >= 0 && y < boardx->nb_rows; --j){
          if(boardx->board_matrix[j][y] == 1){
             player_1_count++;
          }else{
@@ -263,15 +200,15 @@ static int diagonal1_check_win(board_model *boardx){
             if(boardx->board_matrix[j][y] == 2){
                player_2_count++;
             }  
-            if (boardx->board_matrix[j][y] == 2){
+            if (boardx->board_matrix[j][y] == 0){
                player_2_count = 0;
                player_1_count = 0;
             }
          }
-        if(player_1_count>=4){
+        if(player_1_count >= 4){
            return 1;
         }//return 1 if player 1 wins 
-        if(player_2_count>=4){
+        if(player_2_count >= 4){
            return 2;
         }//return 2 if player 2(IA) wins 
         ++y;
@@ -287,11 +224,11 @@ static int diagonal2_check_win(board_model *boardx){
    unsigned short player_1_count = 0;
    unsigned short player_2_count = 0;
    
-   for (int i = 0; i < boardx->nb_rows ; i++){
+   for (int i = 0; i < boardx->nb_columns ; i++){
       int y = i;
       player_2_count = 0;
       player_1_count = 0;
-      for (int j = 0; j < boardx->nb_columns && y < boardx->nb_rows; ++j){
+      for (int j = 0; j < boardx->nb_rows && y < boardx->nb_columns; ++j){
          if(boardx->board_matrix[j][y] == 1){
             player_1_count++;
          }else{
@@ -299,7 +236,7 @@ static int diagonal2_check_win(board_model *boardx){
             if(boardx->board_matrix[j][y] == 2){
                player_2_count++;
             }  
-            if (boardx->board_matrix[j][y] == 2){
+            if (boardx->board_matrix[j][y] == 0){
                player_2_count = 0;
                player_1_count = 0;
             }
@@ -314,11 +251,11 @@ static int diagonal2_check_win(board_model *boardx){
       }
    }//end for, top right triangle of matrix has been checked for win
 
-   for (int i = (boardx->nb_rows - 1); i >= 0 ; i--){
-      int y = (boardx->nb_columns-1);
+   for (int i = 0; i < boardx->nb_rows ; i++){
+      int y = i;
       player_2_count = 0;
       player_1_count = 0;
-      for (int j = (boardx->nb_rows - 1) ; j >= 0 && y >= 0; --j){
+      for (int j = 0 ; j < boardx->nb_columns && y < boardx->nb_rows; ++j){
          if(boardx->board_matrix[j][y] == 1){
             player_1_count++;
          }else{
@@ -326,7 +263,7 @@ static int diagonal2_check_win(board_model *boardx){
             if(boardx->board_matrix[j][y] == 2){
                player_2_count++;
             }  
-            if (boardx->board_matrix[j][y] == 2){
+            if (boardx->board_matrix[j][y] == 0){
                player_2_count = 0;
                player_1_count = 0;
             }
@@ -337,12 +274,34 @@ static int diagonal2_check_win(board_model *boardx){
         if(player_2_count>=4){
            return 2;
         }//return 2 if player 2(IA) wins 
-        --y;
+        y++;
       }
    }//end for, bottom right triangle of matrix has been checked for win
    
 return 0;// if no player has won yet
 }//end diagonal2_check_win.
+int check_win(board_model *boardx){
+   assert(boardx != NULL);
+   int wining_player = 0;
+   wining_player = horizontal_check_win(boardx);
+   if(wining_player){
+      return wining_player;
+   }
+   wining_player = vertical_check_win(boardx);
+   if(wining_player){
+      return wining_player;
+   }
+   wining_player = diagonal1_check_win(boardx);
+   if(wining_player){
+      return wining_player;
+   }
+   wining_player = diagonal2_check_win(boardx);
+
+
+return wining_player;
+}
+
+
 
 int get_board_nb_rows(board_model *boardx){
   assert(boardx != NULL);
@@ -366,7 +325,7 @@ int get_board_disk_value(board_model *boardx, unsigned int row, unsigned int col
 int column_is_full(board_model *boardx ,unsigned int nb_column){
    assert(boardx != NULL);
 
-   if(boardx->board_matrix[0][i] != 0){
+   if(boardx->board_matrix[0][nb_column] != 0){
       return 1;
    }else{
     return 0;

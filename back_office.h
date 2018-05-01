@@ -2,9 +2,8 @@
 #ifndef __MODEL__
 #define __MODEL__
 
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
-
+//#include <gtk/gtk.h>
+//#include <gdk/gdkkeysyms.h>
 /**
  * Initialization of opaque type board
  *
@@ -15,12 +14,6 @@ typedef struct board_t{
     unsigned short **board_matrix;
     unsigned short player_moves;
 }board_model;
-
-
-
-
-
-int play_turn(board_model *boardx, GtkWidget *pTable, GtkWidget *buttons, GtkWidget ***image_table, unsigned short column);
 
 /**
  * destroy_board
@@ -36,7 +29,7 @@ int play_turn(board_model *boardx, GtkWidget *pTable, GtkWidget *buttons, GtkWid
  *      Void function, no return.
  *
  */
-static void destroy_board(board_model *boardx);
+void destroy_board(board_model *boardx);
 /**
  * *init_board
  *
@@ -54,7 +47,7 @@ static void destroy_board(board_model *boardx);
  *     NULL pointer on error.
  *
  */
-board_model *init_board(char rows, char columns);
+board_model *init_board(unsigned short rows, unsigned short columns);
 
 /**
  * add_pawn
@@ -93,79 +86,9 @@ int add_pawn(board_model *boardx, unsigned int player, unsigned short column);
  *  
  *
  */
-static int check_win(board_model *boardx);
+int check_win(board_model *boardx);
 
-/**
- * horizontal_check_win
- *
- * checks if one of the player has conected 4 pieces in a row horizontaly.
- *
- * @param *boardx, a pointer to a board structure.
- * 
- *
- * @pre: *boardx point to a valid and initialized board 
- * @post: board is unchanged and has been checked for a winner horizontaly. 
- *
- * @return:
- *     The number of the wining player (1 or 2), or 0 is no player has won yet.
- *  
- *
- */
-static int horizontal_check_win(board_model *boardx);
 
-/**
- * vertical_check_win
- *
- * checks if one of the player has conected 4 pieces in a row verticaly.
- *
- * @param *boardx, a pointer to a board structure.
- * 
- *
- * @pre: *boardx point to a valid and initialized board 
- * @post: board is unchanged and has been checked for a winner verticaly. 
- *
- * @return:
- *     The number of the wining player (1 or 2), or 0 is no player has won yet.
- *  
- *
- */
-static int vertical_check_win(board_model *boardx);
-
-/**
- * diagonal1_check_win
- *
- * checks if one of the player has conected 4 pieces in a row diagonaly.
- *
- * @param *boardx, a pointer to a board structure.
- * 
- *
- * @pre: *boardx point to a valid and initialized board 
- * @post: board is unchanged and has been checked for a winner diagonaly. 
- *
- * @return:
- *     The number of the wining player (1 or 2), or 0 is no player has won yet.
- *  
- *
- */
-static int diagonal1_check_win(board_model *boardx);
-
-/**
- * diagonal2_check_win
- *
- * checks if one of the player has conected 4 pieces in a row diagonaly.
- *
- * @param *boardx, a pointer to a board structure.
- * 
- *
- * @pre: *boardx point to a valid and initialized board 
- * @post: board is unchanged and has been checked for a winner diagonaly. 
- *
- * @return:
- *     The number of the wining player (1 or 2), or 0 is no player has won yet.
- *  
- *
- */
-static int diagonal2_check_win(board_model *boardx);
 
 int get_board_nb_rows(board_model *boardx);
 
