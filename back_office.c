@@ -98,17 +98,19 @@ static int horizontal_check_win(board_model *boardx){
       player_1_count = 0;
       player_2_count = 0;
       for (int j = i; j < boardx->nb_columns; ++j){
-         if(boardx->board_matrix[j][y] == 1){
-            player_1_count++;
-         }else{
-            player_1_count = 0;
-            if(boardx->board_matrix[j][y] == 2){
-               player_2_count++;
-            }
-            if (boardx->board_matrix[j][y] == 0){
+         switch(boardx->board_matrix[y][j]){
+            case(1):
+               player_1_count++;
                player_2_count = 0;
+               break;               
+            case(2):
+               player_2_count++;
                player_1_count = 0;
-            }
+               break;
+            default :
+               player_1_count = 0;
+               player_2_count = 0;
+               break;
          }
         if(player_1_count>=4){
            return 1;
@@ -132,17 +134,19 @@ static int vertical_check_win(board_model *boardx){
       player_1_count = 0;
       player_2_count = 0;
       for (int j = 0; j < boardx->nb_rows; ++j){
-         if(boardx->board_matrix[j][i] == 1){
-            player_1_count++;
-         }else{
-            player_1_count = 0;
-            if(boardx->board_matrix[j][i] == 2){
-               player_2_count++;
-            }  
-            if (boardx->board_matrix[j][i] == 0){
+         switch(boardx->board_matrix[j][i]){
+            case(1):
+               player_1_count++;
                player_2_count = 0;
+               break;               
+            case(2):
+               player_2_count++;
                player_1_count = 0;
-            }
+               break;
+            default :
+               player_1_count = 0;
+               player_2_count = 0;
+               break;
          }
         if(player_1_count>=4){
            return 1;
@@ -166,18 +170,21 @@ static int diagonal1_check_win(board_model *boardx){
       player_2_count = 0;
       player_1_count = 0;
       for (int j = 0; j < boardx->nb_columns && y >= 0; ++j){
-         if(boardx->board_matrix[y][j] == 1){
-            player_1_count++;
-         }else{
-            player_1_count = 0;
-            if(boardx->board_matrix[y][j] == 2){
-               player_2_count++;
-            }  
-            if (boardx->board_matrix[y][j] == 0){
+         switch(boardx->board_matrix[y][j]){
+            case(1):
+               player_1_count++;
                player_2_count = 0;
+               break;               
+            case(2):
+               player_2_count++;
                player_1_count = 0;
-            }
+               break;
+            default :
+               player_1_count = 0;
+               player_2_count = 0;
+               break;
          }
+
         if(player_1_count>=4){
            return 1;
         }//return 1 if player 1 wins 
@@ -193,17 +200,19 @@ static int diagonal1_check_win(board_model *boardx){
       player_2_count = 0;
       player_1_count = 0;
       for (int j = (boardx->nb_columns - 1); j >= 0 && y < boardx->nb_rows; --j){
-         if(boardx->board_matrix[j][y] == 1){
-            player_1_count++;
-         }else{
-            player_1_count = 0;
-            if(boardx->board_matrix[j][y] == 2){
-               player_2_count++;
-            }  
-            if (boardx->board_matrix[j][y] == 0){
+         switch(boardx->board_matrix[y][j]){
+            case(1):
+               player_1_count++;
                player_2_count = 0;
+               break;               
+            case(2):
+               player_2_count++;
                player_1_count = 0;
-            }
+               break;
+            default :
+               player_1_count = 0;
+               player_2_count = 0;
+               break;
          }
         if(player_1_count >= 4){
            return 1;
@@ -229,17 +238,19 @@ static int diagonal2_check_win(board_model *boardx){
       player_2_count = 0;
       player_1_count = 0;
       for (int j = 0; j < boardx->nb_rows && y < boardx->nb_columns; ++j){
-         if(boardx->board_matrix[j][y] == 1){
-            player_1_count++;
-         }else{
-            player_1_count = 0;
-            if(boardx->board_matrix[j][y] == 2){
-               player_2_count++;
-            }  
-            if (boardx->board_matrix[j][y] == 0){
+         switch(boardx->board_matrix[j][y]){
+            case(1):
+               player_1_count++;
                player_2_count = 0;
+               break;               
+            case(2):
+               player_2_count++;
                player_1_count = 0;
-            }
+               break;
+            default :
+               player_1_count = 0;
+               player_2_count = 0;
+               break;
          }
         if(player_1_count>=4){
            return 1;
@@ -256,22 +267,24 @@ static int diagonal2_check_win(board_model *boardx){
       player_2_count = 0;
       player_1_count = 0;
       for (int j = 0 ; j < boardx->nb_columns && y < boardx->nb_rows; ++j){
-         if(boardx->board_matrix[j][y] == 1){
-            player_1_count++;
-         }else{
-            player_1_count = 0;
-            if(boardx->board_matrix[j][y] == 2){
-               player_2_count++;
-            }  
-            if (boardx->board_matrix[j][y] == 0){
+         switch(boardx->board_matrix[y][j]){
+            case(1):
+               player_1_count++;
                player_2_count = 0;
+               break;               
+            case(2):
+               player_2_count++;
                player_1_count = 0;
-            }
+               break;
+            default :
+               player_1_count = 0;
+               player_2_count = 0;
+               break;
          }
-        if(player_1_count>=4){
+        if(player_1_count >= 4){
            return 1;
         }//return 1 if player 1 wins 
-        if(player_2_count>=4){
+        if(player_2_count >= 4){
            return 2;
         }//return 2 if player 2(IA) wins 
         y++;
@@ -280,6 +293,7 @@ static int diagonal2_check_win(board_model *boardx){
    
 return 0;// if no player has won yet
 }//end diagonal2_check_win.
+
 int check_win(board_model *boardx){
    assert(boardx != NULL);
    int wining_player = 0;
@@ -330,5 +344,24 @@ int column_is_full(board_model *boardx ,unsigned int nb_column){
    }else{
     return 0;
    }
+
+}
+
+int is_there_support(board_model *boardx, unsigned int nb_row, unsigned int nb_column){
+   assert(boardx != NULL);
+
+   if((nb_row+1) >= boardx->nb_rows){
+      if ((nb_row +1) > boardx->nb_rows ){
+        return 0; // error, this should not happen
+      }
+      if ((nb_row + 1 ) == boardx->nb_rows)
+      {
+        return 1; // the base will hold the disk
+      }
+   }
+   if (get_board_disk_value(boardx, (nb_row+1), nb_column) != 0 ){
+      return 1;// there is a disk that will suport an other disk;
+   }
+   return 0;
 
 }

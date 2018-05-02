@@ -74,12 +74,10 @@ int play_turn(board_model *boardx, GtkWidget *pTable, board_vue *bv, unsigned sh
   
    int wining_player = 0;
    int error_code = 0;
-   add_pawn(boardx, 1, column);
-   error_code = redraw_board(boardx, pTable, bv);
-   if(error_code){
-      return 1;
-   }
    wining_player = check_win(boardx);
+   if (wining_player){
+     printf("player %d won\n",wining_player );
+   }
    switch(wining_player){
       case 1:
           //player one wining popup
@@ -88,7 +86,27 @@ int play_turn(board_model *boardx, GtkWidget *pTable, board_vue *bv, unsigned sh
          //player 2 wining popup
          return 0;
       default :
-         ;//continue, NOP
+         break;//continue, NOP
+
+    }
+   add_pawn(boardx, 1, column);
+   error_code = redraw_board(boardx, pTable, bv);
+   if(error_code){
+      return 1;
+   }
+   wining_player = check_win(boardx);
+   if (wining_player){
+     printf("player %d won\n",wining_player );
+   }
+   switch(wining_player){
+      case 1:
+          //player one wining popup
+          return 0;
+      case 2:
+         //player 2 wining popup
+         return 0;
+      default :
+         break;//continue, NOP
     }
    boardx->player_moves += 1;
 
@@ -108,8 +126,10 @@ int play_turn(board_model *boardx, GtkWidget *pTable, board_vue *bv, unsigned sh
          //player 2 wining popup
          return 0;
       default :
-         ;//continue, NOP
+         break;//continue, NOP
     }
-
+     if (wining_player){
+     printf("player %d won\n",wining_player );
+   }
    return 0; 
 }

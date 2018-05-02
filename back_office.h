@@ -97,5 +97,13 @@ int get_board_nb_columns(board_model *boardx);
 int get_board_disk_value(board_model *boardx, unsigned int row, unsigned int column);
 
 int column_is_full(board_model *boardx ,unsigned int nb_column);
+/**
+ *is_there_support
+ *
+ *checks if there is something that will support the disk and keep it in the intended place
+ *
+ *
+*/
+int is_there_support(board_model *boardx,unsigned int nb_row,unsigned int nb_column);
 
 #endif
