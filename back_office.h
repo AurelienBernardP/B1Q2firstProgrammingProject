@@ -70,6 +70,8 @@ board_model *init_board(unsigned short rows, unsigned short columns);
  */
 int add_pawn(board_model *boardx, unsigned int player, unsigned short column);
 
+
+void reinitialize_board_model(board_model *boardx);
 /**
  * check_win
  *
@@ -104,6 +106,9 @@ int column_is_full(board_model *boardx ,unsigned int nb_column);
  *
  *
 */
-int is_there_support(board_model *boardx,unsigned int nb_row,unsigned int nb_column);
+int is_there_support(board_model *boardx, int nb_row, int nb_column);
 
+int move_is_in_board(board_model *boardx, int nb_row, int nb_column);
+
+int move_is_fair(board_model *boardx, int nb_row, int nb_column);
 #endif

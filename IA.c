@@ -23,7 +23,7 @@ static int horizontal_try_add_to_x(board_model *boardx, int nb_to_add_to){
   assert(boardx != NULL);
 
   int player_2_count = 0;
-    int succesfull = 1;
+  int succesfull = 1;
   for (int i = (boardx->nb_rows - 1); i >= 0; --i){
       player_2_count = 0;
       for (int j = 0; j < boardx->nb_columns; ++j){
@@ -32,8 +32,8 @@ static int horizontal_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;
          }
-        if(player_2_count == nb_to_add_to && ((j + 1) < boardx->nb_columns) && boardx->board_matrix[i][j+1] == 0 && (boardx->board_matrix[i+1][j+1] != 0 || i == (boardx->nb_rows - 1))){
-          succesfull = add_pawn(boardx, 2, j);
+        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(i),(j+1))){
+          succesfull = add_pawn(boardx, 2, j+1);
            if (succesfull == 0){
               return 2;
            }
@@ -49,8 +49,8 @@ static int horizontal_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;
          }
-        if(player_2_count== nb_to_add_to && ((j - 1) >= 0) && boardx->board_matrix[i][j-1] == 0 ){
-          succesfull = add_pawn(boardx, 2, j);
+        if(player_2_count== nb_to_add_to && move_is_fair(boardx,(i),(j-1))){
+          succesfull = add_pawn(boardx, 2, j-1);
            if (succesfull == 0){
               return 2;
            }
@@ -128,7 +128,7 @@ static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to &&((y-1)>=0 && (j+1)<boardx->nb_columns) && (boardx->board_matrix[y-1][j+1] == 0 && boardx->board_matrix[y][j+1] != 0)){
+        if(player_2_count == nb_to_add_to &&move_is_fair(boardx,(y-1),(j+1))){
           succesfull = add_pawn(boardx, 2, j+1);
            if (succesfull == 0){
               return 2;
@@ -142,13 +142,13 @@ static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
       int y = (boardx->nb_rows - 1);
       player_2_count = 0;
       for (int j = i; j < boardx->nb_columns  && y >= 0; ++j){
-         if(boardx->board_matrix[j][y] == 2){
+         if(boardx->board_matrix[y][j] == 2){
             player_2_count++;
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && ((j-1) >= 0 && (y+1) < boardx->nb_columns) && (boardx->board_matrix[j-1][y+1] == 0 && boardx->board_matrix[j][y+1] != 0)){
-          succesfull = add_pawn(boardx, 2, y+1);
+        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y-1),(j+1))){
+          succesfull = add_pawn(boardx, 2, j+1);
            if (succesfull == 0){
               return 2;
            }
@@ -156,7 +156,7 @@ static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
         --y;
       }
    }//end for, bottom right triangle (bottom to top)of matrix has been checked for possible win
-
+   
    for (int i = 0; i < boardx->nb_rows; ++i){
       int y = (boardx->nb_columns - 1);
 
@@ -167,7 +167,7 @@ static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && ((j+1) < boardx->nb_rows && (y-1) >= 0) && (boardx->board_matrix[j+1][y-1] == 0 && ((j+2) == boardx->nb_rows || boardx->board_matrix[j+2][y-1] != 0 ))){
+        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(j+1),(y-1))){
           succesfull = add_pawn(boardx, 2, y-1);
            if (succesfull == 0){
               return 2;
@@ -187,7 +187,7 @@ static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && ((j-1) >= 0 && (y+1) < boardx->nb_columns) && (boardx->board_matrix[y+1][j-1] == 0 && ( (j+2) == boardx->nb_rows) || (boardx->board_matrix[j+2][y+1] != 0))){
+        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y+1),(j-1))){
           succesfull = add_pawn(boardx, 2, j-1);
            if (succesfull == 0){
               return 2;
@@ -196,7 +196,7 @@ static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
         ++y;
       }
    }//end for, top left triangle (top to botom)of matrix has been checked for possible win
-
+      
 return 0; //no player has won yet
 }
 
@@ -229,7 +229,7 @@ static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && ((y-1) >= 0 && (j-1) >= 0) && (boardx->board_matrix[y-1][j-1] == 0 && boardx->board_matrix[y][j-1] != 0)){
+        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y-1),(j-1))){
           succesfull = add_pawn(boardx, 2, j-1);
            if (succesfull == 0){
               return 2;
@@ -238,17 +238,17 @@ static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
         --y;
       }
    }//end for, bottom left triangle (bottom to top)of matrix has been checked for win
-
+    
    for (int i = (boardx->nb_rows - 1); i >= 0 ; i--){
       int y = (boardx->nb_columns - 1);
       player_2_count = 0;
       for (int j = i ; j >= 0 && y >= 0; --j){
-         if(boardx->board_matrix[y][j] == 2){
+         if(boardx->board_matrix[j][y] == 2){
             player_2_count++;
          }else{
             player_2_count = 0;       
          }
-        if(player_2_count == nb_to_add_to && ((y-1) >= 0 && (j-1) >= 0) && (boardx->board_matrix[j-1][y-1] == 0 && boardx->board_matrix[j][y-1] != 0)){
+        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(j-1),(y-1))){
           succesfull = add_pawn(boardx, 2, j-1);
            if (succesfull == 0){
               return 2;
@@ -257,7 +257,7 @@ static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
         }
       }
    }//end for, top right triangle(bottom to top) of matrix has been checked for win
-
+   
    for (int i = 0; i < boardx->nb_rows; i++){
       int y = 0;
       player_2_count = 0;
@@ -267,7 +267,7 @@ static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;       
          }
-        if(player_2_count == nb_to_add_to && ((y+1) < boardx->nb_columns && (j+1) < boardx->nb_rows) && (boardx->board_matrix[j+1][y+1] == 0 && ( (j + 2) == boardx->nb_rows) || boardx->board_matrix[j+2][y+1] != 0)){
+        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(j+1),(y+1))){
           succesfull = add_pawn(boardx, 2, y+1);
            if (succesfull == 0){
               return 2;
@@ -276,18 +276,18 @@ static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
         }
       }
    }//end for, bottom left triangle(top to bottom) of matrix has been checked for win
-
-   for (int i = (boardx->nb_columns-1); i >= 0; --i){
+    
+   for (int i = 0; i < boardx->nb_columns; ++i){
       int y = 0;
 
       player_2_count = 0;
-      for (int j = i; j >=0 && y < boardx->nb_rows; ++j){
+      for (int j = i; j < boardx->nb_columns && y < boardx->nb_rows; ++j){
          if(boardx->board_matrix[y][j] == 2){
             player_2_count++;
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && ((j+1) < boardx->nb_columns && (y+1) < boardx->nb_rows) && (boardx->board_matrix[y+1][j-1] == 0 && (boardx->board_matrix[y+2][j+1] != 0 || (y + 2) == boardx->nb_rows))){
+        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y+1),(j+1))){
           succesfull = add_pawn(boardx, 2, j+1);
            if (succesfull == 0){
               return 2;
@@ -296,7 +296,7 @@ static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
         ++y;
       }
    }//end for, top right triangle (top to botom)of matrix has been checked for possible win
-
+     
 return 0;
 }
 
@@ -328,7 +328,7 @@ static int try_block_horizontal_x_in_row(board_model *boardx,int nb_to_block){
          }else{
             player_1_count = 0;
          }
-        if(player_1_count == nb_to_block && ((j + 1) < boardx->nb_columns) && boardx->board_matrix[i][j+1] == 0 && ((i+1) == boardx->nb_rows || boardx->board_matrix[i+1][j+1] != 0 )){
+        if(player_1_count == nb_to_block && move_is_fair(boardx,(i),(j+1))){
           succesfull = add_pawn(boardx, 2, j+1);
            if (succesfull == 0){
               return 1;
@@ -336,7 +336,7 @@ static int try_block_horizontal_x_in_row(board_model *boardx,int nb_to_block){
         }//return 1 if win of player 1 bloked 
       }
    }//end for, horizontal (left to right)check for possible win
-
+   
     for (int i = (boardx->nb_rows - 1); i >= 0; --i){
       player_1_count = 0;
       for (int j = boardx->nb_columns; j > 0; --j){
@@ -345,7 +345,7 @@ static int try_block_horizontal_x_in_row(board_model *boardx,int nb_to_block){
          }else{
             player_1_count = 0;
          }
-        if(player_1_count == nb_to_block && ((j - 1) >= 0) && boardx->board_matrix[i][j-1] == 0 && ((i+1) == boardx->nb_rows || boardx->board_matrix[i+1][j-1] != 0)){
+        if(player_1_count == nb_to_block && ((j - 1) >= 0) && move_is_fair(boardx,(i),(j-1))){
           succesfull = add_pawn(boardx, 2, j-1);
            if (succesfull == 0){
               return 1;
@@ -384,12 +384,12 @@ static int try_block_vertical_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && ((j - 1) >= 0) && boardx->board_matrix[j-1][i] == 0 ){
+        if(player_1_count == nb_to_block && ((j - 1) >= 0) && move_is_fair(boardx,(j-1),(i)) ){
           succesfull = add_pawn(boardx, 2, i);
            if (succesfull == 0){
               return 1;
            }
-        }//return 1 if win of player 1 bloked 
+        }//return 1 if win of player 1 blocked 
       }
    }//end for, vertical check for possible win
 return 0; //if no block took place
@@ -398,12 +398,12 @@ return 0; //if no block took place
 /**
  * try_block_diagonal1_x_in_row
  *
- * Function that tries to block x disks diagonaly in a connect 4 game if possible
+ * Function that tries to block x disks diagonally in a connect 4 game if possible
  *
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked in a positive gradient diagonal for the posibility to block x and move is made if possible
+ * @post: the board_model has been checked in a positive gradient diagonal for the possibility to block x and move is made if possible
  *
  * @return:
  *         1 if move could be done
@@ -424,7 +424,7 @@ static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block &&((y-1)>=0 && (j+1)<boardx->nb_columns) && (boardx->board_matrix[y-1][j+1] == 0 && boardx->board_matrix[y][j+1] != 0)){
+        if(player_1_count == nb_to_block &&move_is_fair(boardx,(y-1),(j+1))){
           succesfull = add_pawn(boardx, 2, j+1);
            if (succesfull == 0){
               return 1;
@@ -433,7 +433,7 @@ static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
         y--;
       }
    }//end for, top left triangle (bottom to top)of matrix has been checked for block
-
+ 
    for (int i = 0; i < boardx->nb_columns; ++i){
       int y = i;
       player_1_count = 0;
@@ -443,7 +443,7 @@ static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && ((j-1) >= 0 && (y+1) < boardx->nb_columns) && (boardx->board_matrix[j-1][y+1] == 0 && boardx->board_matrix[j][y+1] != 0)){
+        if(player_1_count == nb_to_block && move_is_fair(boardx,(j-1),(y+1))){
           succesfull = add_pawn(boardx, 2, y+1);
            if (succesfull == 0){
               return 1;
@@ -452,27 +452,27 @@ static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
         ++y;
       }
    }//end for, bottom right triangle (bottom to top)of matrix has been checked for possible block
-
+    
    for (int i = 0; i < boardx->nb_rows; ++i){
-      int y = 0;
+      int y = (boardx->nb_columns-1);
 
       player_1_count = 0;
-      for (int j = i; j < boardx->nb_rows && y < boardx->nb_columns; ++j){
+      for (int j = i; j < boardx->nb_rows && y >= 0; ++j){
          if(boardx->board_matrix[j][y] == 1){
             player_1_count++;
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && ((j+1) < boardx->nb_rows && (y+1) < boardx->nb_columns) && (boardx->board_matrix[j+1][y+1] == 0 && ((j+2) == boardx->nb_rows || boardx->board_matrix[j+2][y+1] != 0))){
+        if(player_1_count == nb_to_block && move_is_fair(boardx,(j+1),(y-1))){
           succesfull = add_pawn(boardx, 2, y-1);
            if (succesfull == 0){
               return 1;
            }
         }//return 2 if player 2(IA) wins 
-        ++y;
+        --y;
       }
    }//end for, bottom right triangle (top to botom)of matrix has been checked for possible block
-
+       
    for (int i = (boardx->nb_columns-1); i >= 0; --i){
       int y = 0;
 
@@ -483,8 +483,8 @@ static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && ((j-1) >= 0 && (y+1) < boardx->nb_columns) && (boardx->board_matrix[y+1][j-1] == 0 && (((j+2) == boardx->nb_rows ) || boardx->board_matrix[j+2][y+1] != 0))){
-          succesfull = add_pawn(boardx, 2, y+1);
+        if(player_1_count == nb_to_block && move_is_fair(boardx,(y+1),(j-1))){
+          succesfull = add_pawn(boardx, 2, j-1);
            if (succesfull == 0){
               return 1;
            }
@@ -492,7 +492,7 @@ static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
         ++y;
       }
    }//end for, top left triangle (top to botom)of matrix has been checked for possible block
-
+      
 return 0; //if no block took place
 }
 /**
@@ -524,7 +524,7 @@ static int try_block_diagonal2_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && ((y-1) >= 0 && (j-1) >= 0) && (boardx->board_matrix[y-1][j-1] == 0 && boardx->board_matrix[y][j-1] != 0)){
+        if(player_1_count == nb_to_block && move_is_fair(boardx,(y-1),(j-1)) ){
           succesfull = add_pawn(boardx, 2, j-1);
            if (succesfull == 0){
               return 1;
@@ -538,12 +538,12 @@ static int try_block_diagonal2_x_in_row(board_model *boardx, int nb_to_block){
       int y = (boardx->nb_columns-1);
       player_1_count = 0;
       for (int j = i ; j >= 0 && y >= 0; --j){
-         if(boardx->board_matrix[y][j] == 1){
+         if(boardx->board_matrix[j][y] == 1){
             player_1_count++;
          }else{
             player_1_count = 0;       
          }
-        if(player_1_count == nb_to_block && ((y-1) >= 0 && (j-1) >= 0) && (boardx->board_matrix[j-1][y-1] == 0 && boardx->board_matrix[j][y-1] != 0)){
+        if(player_1_count == nb_to_block && move_is_fair(boardx,(j-1),(y-1))){
           succesfull = add_pawn(boardx, 2, y-1);
            if (succesfull == 0){
               return 1;
@@ -558,11 +558,11 @@ static int try_block_diagonal2_x_in_row(board_model *boardx, int nb_to_block){
       player_1_count = 0;
       for (int j = i ; j < boardx->nb_rows && y < boardx->nb_columns; ++j){
          if(boardx->board_matrix[j][y] == 1){
-            player_1_count++;
+            ++player_1_count;
          }else{
             player_1_count = 0;       
          }
-        if(player_1_count == nb_to_block && ((y+1) < boardx->nb_columns && (j+1) < boardx->nb_rows) && (boardx->board_matrix[j+1][y+1] == 0 && ( (j + 2) == boardx->nb_rows || boardx->board_matrix[j+2][y+1] != 0))){
+        if(player_1_count == nb_to_block && move_is_fair(boardx,(j+1),(y+1)) ){
           succesfull = add_pawn(boardx, 2, y+1);
            if (succesfull == 0){
               return 1;
@@ -571,26 +571,25 @@ static int try_block_diagonal2_x_in_row(board_model *boardx, int nb_to_block){
         }
       }
    }//end for, bottom left triangle(top to bottom) of matrix has been checked for win
-
-   for (int i = (boardx->nb_columns-1); i >= 0; --i){
-      int y = 0;
-
+   
+   for (int i = 0; i < boardx->nb_columns; ++i){
+      int y = i;
       player_1_count = 0;
-      for (int j = i; j >=0 && y < boardx->nb_rows; ++j){
-         if(boardx->board_matrix[y][j] == 1){
+      for (int j = 0; j < boardx->nb_rows && y < boardx->nb_columns; ++j){
+         if(boardx->board_matrix[j][y] == 1){
             player_1_count++;
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && ((j+1) < boardx->nb_columns && (y+1) < boardx->nb_rows) && (boardx->board_matrix[y+1][j-1] == 0 && ( (y + 2) == boardx->nb_rows || boardx->board_matrix[y+2][j+1] != 0))){
-          succesfull = add_pawn(boardx, 2, j+1);
+        if(player_1_count == nb_to_block && move_is_fair(boardx,(j+1),(y+1))){
+          succesfull = add_pawn(boardx, 2, y+1);
            if (succesfull == 0){
               return 1;
            }
         }//return 2 if player 2(IA) wins 
         ++y;
       }
-   }//end for, top right triangle (top to botom)of matrix has been checked for possible win
+   }//end for, top right triangle (top to bottom)of matrix has been checked for possible win
 
 return 0;//if no block took place
 }
@@ -613,10 +612,9 @@ static int random_play(board_model *boardx){
    assert(boardx != NULL);
    
    srand(time(NULL));
-   int succesfull = 1;
-   printf("random play \n");
-   while(succesfull == 1){
-   succesfull = add_pawn(boardx, 2, rand()%(boardx->nb_columns-1));
+   int succesfull = -1;
+   while(succesfull == -1){
+   succesfull = add_pawn(boardx, 2, rand()%(get_board_nb_columns(boardx)-1));
    }
    return 1;
  } 
@@ -643,21 +641,22 @@ static int try_to_win(board_model *boardx){
    if (do_win){
       return 1;
    }
-
+  
    do_win = vertical_try_add_to_x(boardx, 3);
    if (do_win){
       return 1;
    }
-
+   
    do_win = diagonal1_try_add_to_x(boardx, 3);
    if (do_win){
       return 1;
    }
-
+  
    do_win = diagonal2_try_add_to_x(boardx, 3);
    if (do_win){
       return 1;
    }
+     
 return 0;
 }
 /**
@@ -764,51 +763,50 @@ static int try_block_3(board_model *boardx){
    if (do_block_3){
       return 1;
    }
-
+  
    do_block_3 = try_block_vertical_x_in_row(boardx,2);
    if (do_block_3){
       return 1;
    }
-
+   
    do_block_3 = try_block_diagonal1_x_in_row(boardx,2);
    if (do_block_3){
       return 1;
    }
-
+  
    do_block_3 = try_block_diagonal2_x_in_row(boardx,2);
    if (do_block_3){
       return 1;
    }
+
 return 0;
 }
 
 void IA_play(board_model *boardx){
    assert(boardx != NULL);
    int move_done = 0;
- 
+
    move_done = try_to_win(boardx);
    if(move_done){
-     printf("win\n");
       return;
    }
+  
    move_done = try_block_win(boardx);
-
    if(move_done){
-          printf("blocked\n");
       return;
   }
-  move_done = try_to_make_3(boardx);
   
+  move_done = try_to_make_3(boardx);    
   if (move_done){
-         printf("make 3\n");
      return;
   }
+ 
   move_done = try_block_3(boardx);
   if(move_done){
-    printf("block 3\n");
      return;
   }
+    
   move_done = random_play(boardx);
-
+  
 return;
 }

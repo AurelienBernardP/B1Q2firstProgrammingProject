@@ -18,12 +18,12 @@
 int main(int argc, char **argv){
 
 
-   char *optstring = ":f:n:::l::c::h::";
+   char *optstring = "f:n:::l::c::h::";
    int val;
    char *top_score_path ;
    char *player_name = "this is a players name example";
    unsigned int lines_in_board = 7;
-   unsigned int columns_in_board = 6;
+   unsigned int columns_in_board = 15;
 
    while((val = getopt(argc, argv, optstring)) !=EOF){
       switch(val){
@@ -46,7 +46,7 @@ int main(int argc, char **argv){
              }
              break;
           case 'h':
-             printf("Help:\n   -f[write file path]\n   -n[enter player's name]\n   -l /-c[number of lines/columns]");
+             printf("Help:\n   -f[write file path]\n   -n[enter player's name]\n   -l /-c[number of lines/columns]\n");
              break;
           case 'c':
              columns_in_board = 0;
@@ -58,7 +58,6 @@ int main(int argc, char **argv){
                    return 0;
                 }
              }
-
             break;
          case '?':
             printf("unknown option: %c, try -h for help\n", optopt);
@@ -81,17 +80,20 @@ int main(int argc, char **argv){
    GtkWidget *megabox;
 
    board_model *game_board = init_board(lines_in_board, columns_in_board);
+   if (game_board == NULL){
+     return 0;
+   }
    board_vue *vue = create_board_vue(game_board);
+   if (vue == NULL){
+     return 0;
+   }
    board_controler *controler = create_board_controler(game_board, vue);
-
+   if (controler == NULL){
+     return 0;
+   }
 //making_buttons with a signal connect and putting them in a container (Zone 3)
    GtkWidget *buttons_box = gtk_hbox_new(TRUE, 0);
   
-
-   for (unsigned int i = 0; i < columns_in_board; ++i){
-     controler->buttons[i] =  gtk_button_new_with_label("");
-     g_signal_connect(G_OBJECT(controler->buttons[i]), "clicked", G_CALLBACK(move_made), controler);
-   }
    for (unsigned int i = 0; i < columns_in_board; ++i){
     gtk_box_pack_start(GTK_BOX(buttons_box), controler->buttons[i], TRUE, TRUE, 0);
    }
@@ -101,8 +103,14 @@ int main(int argc, char **argv){
 
 // puting the window contents toguether
    window = make_window(game_board);
+   if (window == NULL){
+     return 0;
+   }
    GUIboard = vue->gtk_table;
-   menu = create_menu(window);
+   menu = create_menu(window, controler);
+   if (menu == NULL){
+     return 0;
+   }
    megabox = gtk_vbox_new(FALSE, 0);
 
    gtk_container_add(GTK_CONTAINER(window),megabox);

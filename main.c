@@ -18,7 +18,7 @@
 int main(int argc, char **argv){
 
 
-   char *optstring = ":f:n:::l::c::h::";
+   char *optstring = "f:n:::l::c::h::";
    int val;
    char *top_score_path ;
    char *player_name = "this is a players name example";
@@ -58,7 +58,6 @@ int main(int argc, char **argv){
                    return 0;
                 }
              }
-
             break;
          case '?':
             printf("unknown option: %c, try -h for help\n", optopt);

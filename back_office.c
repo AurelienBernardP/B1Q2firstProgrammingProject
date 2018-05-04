@@ -71,6 +71,18 @@ board_model *init_board(unsigned short rows, unsigned short columns){
 return boardx;
 }
 
+void reinitialize_board_model(board_model *boardx){
+   assert(boardx != NULL);
+
+   for (int i = 0; i < get_board_nb_rows(boardx); ++i){
+      for (int j = 0; j < get_board_nb_columns(boardx); ++j){
+         boardx->board_matrix[i][j] = 0;
+      }
+   }
+   boardx->player_moves = 0;
+   return;
+}
+
 int add_pawn(board_model *boardx, unsigned int player, unsigned short column){
    assert(boardx != NULL && boardx->board_matrix != NULL);
 
@@ -94,11 +106,11 @@ static int horizontal_check_win(board_model *boardx){
    unsigned short player_2_count = 0;
    
    for (int i = 0; i < boardx->nb_rows; ++i){
-      int y = 0;
+
       player_1_count = 0;
       player_2_count = 0;
-      for (int j = i; j < boardx->nb_columns; ++j){
-         switch(boardx->board_matrix[y][j]){
+      for (int j = 0; j < boardx->nb_columns; ++j){
+         switch(boardx->board_matrix[i][j]){
             case(1):
                player_1_count++;
                player_2_count = 0;
@@ -118,7 +130,7 @@ static int horizontal_check_win(board_model *boardx){
         if(player_2_count>=4){
            return 2;
         }//return 2 if player 2(IA) wins
-        ++y; 
+
       }
    }//end for, horizontal check
 return 0; //after board_model has been checked horizontaly and no player has won yet, 0 returned
@@ -193,14 +205,14 @@ static int diagonal1_check_win(board_model *boardx){
         }//return 2 if player 2(IA) wins 
         y--;
       }
-   }//end for, top left triangle of matrix has been checked for win
+   }//end for, bottom right triangle of matrix has been checked for win
 
-   for (int i = 0; i < boardx->nb_rows; ++i){
+   for (int i = 0; i < boardx->nb_columns; ++i){
       int y = i;
       player_2_count = 0;
       player_1_count = 0;
-      for (int j = (boardx->nb_columns - 1); j >= 0 && y < boardx->nb_rows; --j){
-         switch(boardx->board_matrix[y][j]){
+      for (int j = (boardx->nb_rows - 1); j >= 0 && y < boardx->nb_columns; --j){
+         switch(boardx->board_matrix[j][y]){
             case(1):
                player_1_count++;
                player_2_count = 0;
@@ -347,21 +359,42 @@ int column_is_full(board_model *boardx ,unsigned int nb_column){
 
 }
 
-int is_there_support(board_model *boardx, unsigned int nb_row, unsigned int nb_column){
+int is_there_support(board_model *boardx, int nb_row, int nb_column){
    assert(boardx != NULL);
 
-   if((nb_row+1) >= boardx->nb_rows){
-      if ((nb_row +1) > boardx->nb_rows ){
+   if ((nb_row + 1) > boardx->nb_rows ){
         return 0; // error, this should not happen
-      }
-      if ((nb_row + 1 ) == boardx->nb_rows)
-      {
-        return 1; // the base will hold the disk
-      }
    }
+   if ((nb_row + 1 ) == boardx->nb_rows){
+        return 1; // the base will hold the disk
+   }
+   
    if (get_board_disk_value(boardx, (nb_row+1), nb_column) != 0 ){
       return 1;// there is a disk that will suport an other disk;
    }
    return 0;
 
+}
+
+int move_is_in_board(board_model *boardx, int nb_row, int nb_column){
+   assert(boardx != NULL);
+
+   if(nb_row < 0 || nb_row >= get_board_nb_rows(boardx)){
+      return 0;
+   }
+   if (nb_column < 0 || nb_column >= get_board_nb_columns(boardx)){
+      return 0;
+         }
+   return 1; // if position is inside board, return 1 (True);
+}
+
+int move_is_fair(board_model *boardx, int nb_row, int nb_column){
+   assert(boardx != NULL);
+
+   if(move_is_in_board(boardx, nb_row, nb_column) && is_there_support(boardx, nb_row, nb_column)){
+      if(get_board_disk_value(boardx, nb_row, nb_column) == 0){
+         return 1; //if the intedend move id in a free space inside the board and will be supported to stay in the inteded place.
+      }
+   }
+  return 0;// if one of the criteria is not respected
 }
