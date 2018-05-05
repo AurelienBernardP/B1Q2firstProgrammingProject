@@ -2,6 +2,7 @@
 #include "GUI.h"
 #include "control.h"
 #include "IA.h"
+//#include "top10.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,7 +28,7 @@ board_controler *create_board_controler(board_model *Bm, board_vue *Bv){
       printf("Error allocating memory space for buttons\n");
       return NULL;
    }
-   for (unsigned int i = 0; i < get_board_nb_columns(Bm); ++i){
+   for (int i = 0; i < get_board_nb_columns(Bm); ++i){
      board_c->buttons[i] =  gtk_button_new_with_label("");
      g_signal_connect(G_OBJECT(board_c->buttons[i]), "clicked", G_CALLBACK(move_made), board_c);
    }
@@ -58,7 +59,7 @@ GtkWidget *create_menu(GtkWidget *window, board_controler *controler){
    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar),item_partie);
    gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar),item_aide);
 
-   g_signal_connect(G_OBJECT(item_aide),"activate",G_CALLBACK(show_aide),NULL);
+   g_signal_connect(G_OBJECT(item_aide),"activate",G_CALLBACK(show_aide), NULL);
    g_signal_connect(G_OBJECT(item_quit),"activate",G_CALLBACK(gtk_main_quit), NULL);
    g_signal_connect(G_OBJECT(item_new_game),"activate",G_CALLBACK(new_game), controler);
 
@@ -66,9 +67,10 @@ return menu_bar;
 }
 
 void move_made(GtkWidget *button, gpointer data){
+   board_controler *controler = (board_controler*)data;
+   assert(controler != NULL);
 
   int error_code = 0;
-	board_controler *controler = (board_controler*)data;
 
 	unsigned short column_of_button = find_column_clicked(controler, button);
 	if (column_of_button == get_board_nb_columns(controler->bm)){
@@ -104,14 +106,14 @@ unsigned short find_column_clicked(board_controler *controler, GtkWidget *button
 }
 
 void new_game(GtkWidget *button, gpointer data){
-
    board_controler *controler = (board_controler*)data;
+   assert(controler != NULL);
 
    reinitialize_board_model(controler->bm);
    
    redraw_board(controler->bm, controler->bv->gtk_table, controler->bv);
 
-   new_game_popup(NULL, NULL);
+   new_game_popup( NULL);
 
    return;
 }
@@ -127,10 +129,10 @@ int play_turn(board_model *boardx, GtkWidget *pTable, board_vue *bv, unsigned sh
    }
    switch(wining_player){
       case 1:
-          show_you_won(NULL, NULL);
+          show_you_won(NULL);
           return 0;
       case 2:
-         show_you_lose(NULL, NULL);
+         show_you_lose(NULL);
          return 0;
       default :
          break;//continue, NOP
@@ -147,10 +149,10 @@ int play_turn(board_model *boardx, GtkWidget *pTable, board_vue *bv, unsigned sh
    switch(wining_player){
       case 1:
           error_code = redraw_board(boardx, pTable, bv);
-          show_you_won(NULL,NULL );
+          show_you_won(NULL );
           return 0;
       case 2:
-          show_you_lose(NULL, NULL);         
+          show_you_lose( NULL);         
          return 0;
       default :
          break;//continue, NOP
@@ -167,10 +169,10 @@ int play_turn(board_model *boardx, GtkWidget *pTable, board_vue *bv, unsigned sh
    wining_player = check_win(boardx);
    switch(wining_player){
       case 1:
-          show_you_won(NULL,NULL );
+          show_you_won(NULL );
           return 0;
       case 2:
-         show_you_lose(NULL, NULL);
+         show_you_lose(NULL);
          return 0;
       default :
          break;//continue, NOP

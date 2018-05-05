@@ -22,8 +22,8 @@ int main(int argc, char **argv){
    int val;
    char *top_score_path ;
    char *player_name = "this is a players name example";
-   unsigned int lines_in_board = 7;
-   unsigned int columns_in_board = 15;
+   unsigned int lines_in_board = 8;
+   unsigned int columns_in_board = 10;
 
    while((val = getopt(argc, argv, optstring)) !=EOF){
       switch(val){

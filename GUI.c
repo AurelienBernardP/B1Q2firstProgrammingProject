@@ -6,6 +6,8 @@
 #include "GUI.h"
 #include "back_office.h"
 
+typedef enum {empty, player1, player2} disk_color;
+
 GtkWidget *make_window(board_model *boardx){
    
    GtkWidget *pF = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -42,7 +44,7 @@ board_vue *create_board_vue(board_model* boardx){
 
   for (int i = 0; i < get_board_nb_rows(boardx); ++i){
      for (int j = 0; j < get_board_nb_columns(boardx); ++j){
-          board_v->image_table[i][j] = gtk_image_new_from_file("bleu.gif");
+        board_v->image_table[i][j] = gtk_image_new_from_file("bleu.gif");
      }
   }
 
@@ -50,7 +52,7 @@ board_vue *create_board_vue(board_model* boardx){
 
   for (int i = 0; i < get_board_nb_rows(boardx); ++i){
      for (int j = 0; j < get_board_nb_columns(boardx); ++j){
-          gtk_table_attach(GTK_TABLE(board_v->gtk_table), board_v->image_table[i][j] ,j,(j+1),i,(i+1),GTK_EXPAND,GTK_EXPAND,0,0);
+          gtk_table_attach(GTK_TABLE(board_v->gtk_table), GTK_WIDGET(board_v->image_table[i][j]) ,j,(j+1),i,(i+1),GTK_EXPAND,GTK_EXPAND,0,0);
      }
   }
 return board_v;
@@ -62,16 +64,20 @@ int redraw_board(board_model *boardx, GtkWidget *pTable, board_vue *bv){
 	   for (int j = 0; j < get_board_nb_columns(boardx); ++j){
         switch(get_board_disk_value(boardx,i ,j)){
 
-           case 0:
+           case empty:
+              gtk_image_clear (GTK_IMAGE(bv->image_table[i][j]));
               bv->image_table[i][j] = gtk_image_new_from_file("bleu.gif");
+
               break;
 
-           case 1:
-              bv->image_table[i][j] = gtk_image_new_from_file("jaune.gif");
+           case player1:
+              gtk_image_clear (GTK_IMAGE(bv->image_table[i][j]));
+              bv->image_table[i][j] = gtk_image_new_from_file( "jaune.gif");
               break;
 
-           case 2:
-              bv->image_table[i][j] = gtk_image_new_from_file("rouge.gif");
+           case player2:
+              gtk_image_clear (GTK_IMAGE(bv->image_table[i][j]));
+              bv->image_table[i][j] = gtk_image_new_from_file( "rouge.gif");
               break;
 
            default:
@@ -82,7 +88,7 @@ int redraw_board(board_model *boardx, GtkWidget *pTable, board_vue *bv){
   }
   for (int i = 0; i < get_board_nb_rows(boardx); ++i){
      for (int j = 0; j < get_board_nb_columns(boardx); ++j){
-          gtk_table_attach(GTK_TABLE(bv->gtk_table), bv->image_table[i][j] ,j,(j+1),i,(i+1),GTK_EXPAND,GTK_EXPAND,0,0);
+          gtk_table_attach(GTK_TABLE(bv->gtk_table), GTK_WIDGET(bv->image_table[i][j]) ,j,(j+1),i,(i+1),GTK_EXPAND,GTK_EXPAND,0,0);
 
      }
   }
@@ -90,13 +96,11 @@ int redraw_board(board_model *boardx, GtkWidget *pTable, board_vue *bv){
 return 0;
 }
 
-void show_aide(GtkWidget *widget, gpointer window) {
+
+void show_aide(void){
     
   GtkWidget *aide_popup;
-  aide_popup = gtk_message_dialog_new(GTK_WINDOW(window),
-            GTK_DIALOG_DESTROY_WITH_PARENT,
-            GTK_MESSAGE_INFO,
-            GTK_BUTTONS_OK,
+  aide_popup = gtk_message_dialog_new(NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
             "Puissance 4 \nAurélien Bernard \n20176639 \nCours INFO0030");
   gtk_window_set_title(GTK_WINDOW(aide_popup), "Info");
   gtk_dialog_run(GTK_DIALOG(aide_popup));
@@ -104,13 +108,10 @@ void show_aide(GtkWidget *widget, gpointer window) {
   return;
 }
 
-void show_you_won(GtkWidget *widget, gpointer window) {
+void show_you_won( gpointer window) {
     
   GtkWidget *you_won;
-  you_won = gtk_message_dialog_new(GTK_WINDOW(window),
-            GTK_DIALOG_DESTROY_WITH_PARENT,
-            GTK_MESSAGE_INFO,
-            GTK_BUTTONS_OK,
+  you_won = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
             "CONGRATULATIONS! \nyou have won this game! \nskill or just luck?  ¯|_(ツ)_/¯ \n try again just to bu sure! ;D");
   gtk_window_set_title(GTK_WINDOW(you_won), "YOU WON!");
   gtk_dialog_run(GTK_DIALOG(you_won));
@@ -118,13 +119,10 @@ void show_you_won(GtkWidget *widget, gpointer window) {
   return;
 }
 
-void show_you_lose(GtkWidget *widget, gpointer window) {
+void show_you_lose( gpointer window) {
     
   GtkWidget *you_lose;
-  you_lose = gtk_message_dialog_new(GTK_WINDOW(window),
-            GTK_DIALOG_DESTROY_WITH_PARENT,
-            GTK_MESSAGE_INFO,
-            GTK_BUTTONS_OK,
+  you_lose = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
             "GAME_OVER \n    YOU   LOSE \n\n you can try again with:\n     Nouvelle Partie");
   gtk_window_set_title(GTK_WINDOW(you_lose), "GAME OVER");
   gtk_dialog_run(GTK_DIALOG(you_lose));
@@ -132,13 +130,10 @@ void show_you_lose(GtkWidget *widget, gpointer window) {
   return;
 }
 
-void new_game_popup(GtkWidget *widget, gpointer window) {
+void new_game_popup( gpointer window) {
     
   GtkWidget *new_game;
-  new_game = gtk_message_dialog_new(GTK_WINDOW(window),
-            GTK_DIALOG_DESTROY_WITH_PARENT,
-            GTK_MESSAGE_INFO,
-            GTK_BUTTONS_OK,
+  new_game = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
             "Nouvelle partie !\n    Bonne chance!");
   gtk_window_set_title(GTK_WINDOW(new_game), "NEW GAME");
   gtk_dialog_run(GTK_DIALOG(new_game));

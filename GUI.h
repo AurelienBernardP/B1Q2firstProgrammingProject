@@ -21,12 +21,12 @@ board_vue *create_board_vue(board_model *boardx);
 
 int redraw_board(board_model *boardx, GtkWidget *pTable, board_vue *bv);
 
-void show_aide(GtkWidget *widget, gpointer window);
+void show_aide(void);
 
-void show_you_won(GtkWidget *widget, gpointer window);
+void show_you_won( gpointer window);
 
-void show_you_lose(GtkWidget *widget, gpointer window);
+void show_you_lose( gpointer window);
 
-void new_game_popup(GtkWidget *widget, gpointer window);
+void new_game_popup( gpointer window);
 
 #endif
