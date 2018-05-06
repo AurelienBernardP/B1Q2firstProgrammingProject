@@ -29,4 +29,7 @@ void show_you_lose( gpointer window);
 
 void new_game_popup( gpointer window);
 
+void show_top_list(GtkWidget *button, gpointer data);
+
+
 #endif

@@ -13,19 +13,20 @@
 #include "GUI.h"
 #include "back_office.h"
 #include "control.h"
+#include "top10.h"
 
-
+#define MAX_STR_LENGHT 21
 int main(int argc, char **argv){
 
 
-   char *optstring = "f:n:::l::c::h::";
+   char *optstring = "f:n:::l::c::h";
    int val;
-   char *top_score_path ;
-   char *player_name = "this is a players name example";
+   char top_score_path[MAX_STR_LENGHT] = "top.txt";
+   char player_name[MAX_STR_LENGHT] =  "playerX ";
    unsigned int lines_in_board = 8;
    unsigned int columns_in_board = 10;
 
-   while((val = getopt(argc, argv, optstring)) !=EOF){
+   while((val = getopt(argc, argv, optstring)) != EOF){
       switch(val){
          case 'f':
             strcpy(top_score_path, optarg);
@@ -62,12 +63,15 @@ int main(int argc, char **argv){
          case '?':
             printf("unknown option: %c, try -h for help\n", optopt);
             return 0;
+            break;
          case ':':
             printf("missing arg: %c, try -h for help.\n", optopt);
             return 0;
+            break;
          default:
             printf("unknown option: %c, try -h for help.\n", optopt);
             return 0;
+            break;
       }
    }
 
@@ -87,7 +91,11 @@ int main(int argc, char **argv){
    if (vue == NULL){
      return 0;
    }
-   board_controler *controler = create_board_controler(game_board, vue);
+   player *current_player = init_player(player_name, top_score_path);
+   if (current_player == NULL){
+     return 0;
+   }
+   board_controler *controler = create_board_controler(game_board, vue, current_player);
    if (controler == NULL){
      return 0;
    }
@@ -107,7 +115,7 @@ int main(int argc, char **argv){
      return 0;
    }
    GUIboard = vue->gtk_table;
-   menu = create_menu(window, controler);
+   menu = create_menu(window, controler, top_score_path);
    if (menu == NULL){
      return 0;
    }

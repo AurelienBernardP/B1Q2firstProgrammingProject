@@ -1,0 +1,7 @@
+1.playerX 0 
+2.playerX 0 
+3.playerx 3 
+4.playerx 5 
+5.playerx 6 
+6.playeex 7 
+7.playerX  9 

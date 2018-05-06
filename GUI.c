@@ -1,8 +1,9 @@
-#include<stdlib.h>
-#include<gtk/gtk.h>
+#include <stdlib.h>
+#include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-
 #include <assert.h>
+#include <string.h>
+
 #include "GUI.h"
 #include "back_office.h"
 
@@ -138,5 +139,41 @@ void new_game_popup( gpointer window) {
   gtk_window_set_title(GTK_WINDOW(new_game), "NEW GAME");
   gtk_dialog_run(GTK_DIALOG(new_game));
   gtk_widget_destroy(new_game);
+  return;
+}
+
+static void show_error_opening_file(){
+
+  GtkWidget *fopen_error;
+  fopen_error = gtk_message_dialog_new(NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+            "the given path is not valid, there is no top list to be showed\n");
+  gtk_window_set_title(GTK_WINDOW(fopen_error), "Not valid path");
+  gtk_dialog_run(GTK_DIALOG(fopen_error));
+  gtk_widget_destroy(fopen_error);
+  return;
+}
+
+void show_top_list(GtkWidget *button, gpointer data) {
+   char *top10_file_path = (char*)data;
+   assert(top10_file_path != NULL);
+   
+   char full_list[350] = {'\0'};
+   char line_of_file[35] = {'\0'};
+
+   FILE *fp = fopen(top10_file_path, "r");
+   if (fp == NULL){
+     show_error_opening_file();
+     return;
+   }
+   while(!feof(fp)){
+      fgets(line_of_file,35,fp);
+      strcat(full_list, line_of_file);
+   }
+  GtkWidget *top_list;
+  top_list = gtk_message_dialog_new(NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, full_list);
+  gtk_window_set_title(GTK_WINDOW(top_list), "TOP 10 PLAYERS");
+  gtk_dialog_run(GTK_DIALOG(top_list));
+  gtk_widget_destroy(top_list);
+  fclose(fp);
   return;
 }
