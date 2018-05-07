@@ -6,25 +6,115 @@
 #include "IA.h"
 
 /**
- * horizontal_try_add_to_x
+ * is_there_support
  *
- * Function that tries to connect x disks horizontaly in a connect 4 game if possible
+ * Verifies that the piece will fall where intended as it has something under to support it.
  *
- * @param *boardx, a pointer to a board_model structure.  
+ * @param: *boardx, a pointer to a board_model structure.
+ * @param: nb_row, row where the 'disk' should be placed.
+ * @param: nb_column, column where the play is made.
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked horizontaly for the posibility to connect x and move is made if possible
+ * @post: The check is done.
+ *
+ * @return:
+ *     0 if there is no support.
+ *     1 if there is a support
+ */
+static int is_there_support(board_model *boardx, int nb_row, int nb_column){
+   assert(boardx != NULL);
+
+   if ((nb_row + 1) > boardx->nb_rows ){
+      return 0; // error, this should not happen
+   }
+   if ((nb_row + 1 ) == boardx->nb_rows){
+      return 1; // the base will hold the disk
+   }
+   
+   if (get_board_disk_value(boardx, (nb_row + 1), nb_column) != 0 ){
+      return 1;// there is a disk that will support an other disk;
+   }
+
+return 0;
+}
+
+/**
+ * move_is_in_board
+ *
+ * Verifies that the move intended by the IA is inside the board bounds.
+ *
+ * @param: *boardx, a pointer to a board_model structure.
+ * @param: nb_row, row where the 'disk' should be placed.
+ * @param: nb_column, column where the play is made.
+ *
+ * @pre:  boardx != NULL
+ * @post: The check is done.
+ *
+ * @return:
+ *     0 if out of bounds.
+ *     1 if inbounds. 
+ */
+static int move_is_in_board(board_model *boardx, int nb_row, int nb_column){
+   assert(boardx != NULL);
+
+   if(nb_row < 0 || nb_row >= get_board_nb_rows(boardx)){
+      return 0;
+   }
+   if (nb_column < 0 || nb_column >= get_board_nb_columns(boardx)){
+      return 0;
+   }
+   
+return 1; // if position is inside board, return 1 (True);
+}
+
+/**
+ * move_is_fair
+ *
+ * combines move_is_in_board and is_there_support to know if the IA should attempt the move.
+ *
+ * @param: *boardx, a pointer to a board_model structure.
+ * @param: nb_row, row where the 'disk' should be placed.
+ * @param: nb_column, column where the play is made.
+ *
+ * @pre:  boardx != NULL
+ * @post: The check is done.
+ *
+ * @return:
+ *     0 if it is not a good decision from the IA.
+ *     1 if it is a acceptable decision from the IA. 
+ */
+static int move_is_fair(board_model *boardx, int nb_row, int nb_column){
+   assert(boardx != NULL);
+
+   if(move_is_in_board(boardx, nb_row, nb_column) && is_there_support(boardx, nb_row, nb_column)){
+      if(get_board_disk_value(boardx, nb_row, nb_column) == 0){
+         return 1; //if the intedend move id in a free space inside the board and will be supported to stay in the intended place.
+      }
+   }
+
+return 0;// if one of the criteria is not respected
+}
+
+/**
+ * horizontal_try_add_to_x
+ *
+ * Function that tries to connect x disks horizontally in a connect 4 game if possible
+ *
+ * @param: *boardx, a pointer to a board_model structure.  
+ *
+ * @pre:  boardx != NULL
+ * @post: the board_model has been checked horizontally for the possibility to connect x and move is made if possible.
  *
  * @return:
  *         2 if move could be done
- *         0 if there was not the possibility of wining    
+ *         0 if there was no possibility of adding one more 'disk' to the row.    
  */
 static int horizontal_try_add_to_x(board_model *boardx, int nb_to_add_to){
-  assert(boardx != NULL);
+   assert(boardx != NULL);
 
-  int player_2_count = 0;
-  int succesfull = 1;
-  for (int i = (boardx->nb_rows - 1); i >= 0; --i){
+   int player_2_count = 0;
+   int succesfull = 1;
+   for (int i = (boardx->nb_rows - 1); i >= 0; --i){
       player_2_count = 0;
       for (int j = 0; j < boardx->nb_columns; ++j){
          if(boardx->board_matrix[i][j] == 2){
@@ -32,16 +122,16 @@ static int horizontal_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;
          }
-        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(i),(j+1))){
-          succesfull = add_pawn(boardx, 2, j+1);
-           if (succesfull == 0){
-              return 2;
-           }
-        }//return 2 if AI did join nb_to_add_to 
+         if(player_2_count == nb_to_add_to && move_is_fair(boardx,(i),(j+1))){
+            succesfull = add_pawn(boardx, 2, j+1);
+            if (succesfull == 0){
+               return 2;
+            }
+         }//return 2 if AI did join nb_to_add_to 
       }
    }//end for, horizontal (left to right)check for possible win
 
- for (int i = (boardx->nb_rows - 1); i >= 0; --i){
+   for (int i = (boardx->nb_rows - 1); i >= 0; --i){
       player_2_count = 0;
       for (int j = (boardx->nb_columns - 1); j >= 0; --j){
          if(boardx->board_matrix[i][j] == 2){
@@ -49,30 +139,31 @@ static int horizontal_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;
          }
-        if(player_2_count== nb_to_add_to && move_is_fair(boardx,(i),(j-1))){
-          succesfull = add_pawn(boardx, 2, j-1);
-           if (succesfull == 0){
-              return 2;
-           }
-        }//return 2 if AI wins 
+         if(player_2_count== nb_to_add_to && move_is_fair(boardx,(i),(j-1))){
+            succesfull = add_pawn(boardx, 2, j-1);
+            if (succesfull == 0){
+               return 2;
+            }
+         }//return 2 if AI wins 
       }
    }//end for, horizontal (right to left)check for possible win
-return 0; //if no posiblity of wining horizontaly
+
+return 0; 
 }
 
 /**
  * vertical_try_add_to_x
  *
- * Function that tries to connect x disks verticaly in a connect 4 game if possible
+ * Function that tries to connect x disks vertically in a connect 4 game if possible
  *
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked verticaly for the posibility to connect x and move is made if possible
+ * @post: the board_model has been checked vertically for the plausibility to connect x and move is made if possible
  *
  * @return:
  *         2 if move could be done
- *         0 if there was not the possibility of wining    
+ *         0 if there was no possibility of adding one more 'disk' to the row.
  */
 static int vertical_try_add_to_x(board_model *boardx, int nb_to_add_to){
    assert(boardx != NULL);
@@ -88,30 +179,31 @@ static int vertical_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && ((j - 1) >= 0) && boardx->board_matrix[j-1][i] == 0 ){
-          succesfull = add_pawn(boardx, 2, i);
-           if (succesfull == 0){
-              return 2;
-           }
-        }//return 2 if player 2(IA) wins 
+         if(player_2_count == nb_to_add_to && ((j - 1) >= 0) && boardx->board_matrix[j-1][i] == 0 ){
+            succesfull = add_pawn(boardx, 2, i);
+            if (succesfull == 0){
+               return 2;
+            }
+         }//return 2 if player 2(IA) wins 
       }
    }//end for, vertical check
-return 0; //after board_model has been checked verticaly and no player has won yet, 0 returned
+
+return 0; //after board_model has been checked vertically and no player has won yet, 0 returned
 }
 
 /**
  * diagonal1_try_add_to_x
  *
- * Function that tries to connect x disks diagonaly in a connect 4 game if possible
+ * Function that tries to connect x disks diagonally in a connect 4 game if possible
  *
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked in a positive gradient diagonal for the posibility to connect x and move is made if possible
+ * @post: the board_model has been checked in a positive gradient diagonal for the possibility to connect x and move is made if possible
  *
  * @return:
  *         2 if move could be done
- *         0 if there was not the possibility of wining    
+ *         0 if there was no possibility of adding one more 'disk' to the row.    
  */
 static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
    assert(boardx != NULL);
@@ -128,13 +220,13 @@ static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to &&move_is_fair(boardx,(y-1),(j+1))){
-          succesfull = add_pawn(boardx, 2, j+1);
-           if (succesfull == 0){
-              return 2;
-           }
-        }//return 2 if player 2(IA) wins 
-        y--;
+         if(player_2_count == nb_to_add_to &&move_is_fair(boardx,(y-1),(j+1))){
+            succesfull = add_pawn(boardx, 2, j+1);
+            if (succesfull == 0){
+               return 2;
+            }
+         }//return 2 if player 2(IA) wins 
+         y--;
       }
    }//end for, top left (bottom to top)triangle of matrix has been checked for win
 
@@ -147,13 +239,13 @@ static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y-1),(j+1))){
-          succesfull = add_pawn(boardx, 2, j+1);
-           if (succesfull == 0){
-              return 2;
-           }
-        }//return 2 if player 2(IA) wins 
-        --y;
+         if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y-1),(j+1))){
+            succesfull = add_pawn(boardx, 2, j+1);
+            if (succesfull == 0){
+               return 2;
+            }
+         }//return 2 if player 2(IA) wins 
+         --y;
       }
    }//end for, bottom right triangle (bottom to top)of matrix has been checked for possible win
    
@@ -167,13 +259,13 @@ static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(j+1),(y-1))){
-          succesfull = add_pawn(boardx, 2, y-1);
-           if (succesfull == 0){
-              return 2;
-           }
-        }//return 2 if player 2(IA) wins 
-        --y;
+         if(player_2_count == nb_to_add_to && move_is_fair(boardx,(j+1),(y-1))){
+            succesfull = add_pawn(boardx, 2, y-1);
+            if (succesfull == 0){
+               return 2;
+            }
+         }//return 2 if player 2(IA) wins 
+         --y;
       }
    }//end for, bottom right triangle (top to botom)of matrix has been checked for possible win
 
@@ -187,15 +279,15 @@ static int diagonal1_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y+1),(j-1))){
-          succesfull = add_pawn(boardx, 2, j-1);
-           if (succesfull == 0){
-              return 2;
-           }
-        }//return 2 if player 2(IA) wins 
-        ++y;
+         if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y+1),(j-1))){
+            succesfull = add_pawn(boardx, 2, j-1);
+            if (succesfull == 0){
+               return 2;
+            }
+         }//return 2 if player 2(IA) wins 
+         ++y;
       }
-   }//end for, top left triangle (top to botom)of matrix has been checked for possible win
+   }//end for, top left triangle (top to bottom)of matrix has been checked for possible win
       
 return 0; //no player has won yet
 }
@@ -203,16 +295,16 @@ return 0; //no player has won yet
 /**
  * diagonal2_try_add_to_x
  *
- * Function that tries to connect x disks diagonaly in a connect 4 game if possible
+ * Function that tries to connect x disks diagonally in a connect 4 game if possible
  *
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked in a negative gradient diagonal for the posibility to connect x and move is made if possible
+ * @post: the board_model has been checked in a negative gradient diagonal for the possibility to connect x and move is made if possible
  *
  * @return:
  *         2 if move could be done
- *         0 if there was not the possibility of wining    
+ *         0 if there was no possibility of adding one more 'disk' to the row.
  */
 static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
    assert(boardx != NULL);
@@ -229,13 +321,13 @@ static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y-1),(j-1))){
-          succesfull = add_pawn(boardx, 2, j-1);
-           if (succesfull == 0){
-              return 2;
-           }
-        }//return 2 if player 2(IA) wins 
-        --y;
+         if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y-1),(j-1))){
+            succesfull = add_pawn(boardx, 2, j-1);
+            if (succesfull == 0){
+               return 2;
+            }
+         }//return 2 if player 2(IA) wins 
+         --y;
       }
    }//end for, bottom left triangle (bottom to top)of matrix has been checked for win
     
@@ -248,13 +340,13 @@ static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;       
          }
-        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(j-1),(y-1))){
-          succesfull = add_pawn(boardx, 2, j-1);
-           if (succesfull == 0){
-              return 2;
-           }//return 2 if player 2(IA) wins 
-        --y;
-        }
+         if(player_2_count == nb_to_add_to && move_is_fair(boardx,(j-1),(y-1))){
+            succesfull = add_pawn(boardx, 2, j-1);
+            if (succesfull == 0){
+               return 2;
+            }//return 2 if player 2(IA) wins 
+         --y;
+         }
       }
    }//end for, top right triangle(bottom to top) of matrix has been checked for win
    
@@ -267,13 +359,13 @@ static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;       
          }
-        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(j+1),(y+1))){
-          succesfull = add_pawn(boardx, 2, y+1);
-           if (succesfull == 0){
-              return 2;
-           }//return 2 if player 2(IA) wins 
-        ++y;
-        }
+         if(player_2_count == nb_to_add_to && move_is_fair(boardx,(j+1),(y+1))){
+            succesfull = add_pawn(boardx, 2, y+1);
+            if (succesfull == 0){
+               return 2;
+            }//return 2 if player 2(IA) wins 
+         ++y;
+         }
       }
    }//end for, bottom left triangle(top to bottom) of matrix has been checked for win
     
@@ -287,15 +379,15 @@ static int diagonal2_try_add_to_x(board_model *boardx, int nb_to_add_to){
          }else{
             player_2_count = 0;            
          }
-        if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y+1),(j+1))){
-          succesfull = add_pawn(boardx, 2, j+1);
-           if (succesfull == 0){
-              return 2;
-           }
-        }//return 2 if player 2(IA) wins 
-        ++y;
+         if(player_2_count == nb_to_add_to && move_is_fair(boardx,(y+1),(j+1))){
+            succesfull = add_pawn(boardx, 2, j+1);
+            if (succesfull == 0){
+               return 2;
+            }
+         }//return 2 if player 2(IA) wins 
+         ++y;
       }
-   }//end for, top right triangle (top to botom)of matrix has been checked for possible win
+   }//end for, top right triangle (top to bottom)of matrix has been checked for possible win
      
 return 0;
 }
@@ -303,16 +395,16 @@ return 0;
 /**
  * try_block_horizontal_x_in_row
  *
- * Function that tries to block x disks horizontaly in a connect 4 game if possible
+ * Function that tries to block x disks horizontally in a connect 4 game if possible
  *
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked horizontaly for the posibility to block x and move is made if possible
+ * @post: the board_model has been checked horizontally for the possibility to block x and move is made if possible
  *
  * @return:
  *         1 if move could be done
- *         0 if there was not the possibility of wining    
+ *         0 if there was no possibility of blocking the x in a row of the other player 
  */
 static int try_block_horizontal_x_in_row(board_model *boardx,int nb_to_block){
    assert(boardx != NULL);
@@ -328,12 +420,12 @@ static int try_block_horizontal_x_in_row(board_model *boardx,int nb_to_block){
          }else{
             player_1_count = 0;
          }
-        if(player_1_count == nb_to_block && move_is_fair(boardx,(i),(j+1))){
-          succesfull = add_pawn(boardx, 2, j+1);
-           if (succesfull == 0){
-              return 1;
-           }
-        }//return 1 if win of player 1 bloked 
+         if(player_1_count == nb_to_block && move_is_fair(boardx,(i),(j+1))){
+            succesfull = add_pawn(boardx, 2, j+1);
+            if (succesfull == 0){
+               return 1;
+            }
+         }//return 1 if win of player 1 blocked 
       }
    }//end for, horizontal (left to right)check for possible win
    
@@ -345,30 +437,31 @@ static int try_block_horizontal_x_in_row(board_model *boardx,int nb_to_block){
          }else{
             player_1_count = 0;
          }
-        if(player_1_count == nb_to_block && ((j - 1) >= 0) && move_is_fair(boardx,(i),(j-1))){
-          succesfull = add_pawn(boardx, 2, j-1);
-           if (succesfull == 0){
-              return 1;
-           }
-        }//return 1 if win of player 1 bloked 
+         if(player_1_count == nb_to_block && ((j - 1) >= 0) && move_is_fair(boardx,(i),(j-1))){
+            succesfull = add_pawn(boardx, 2, j-1);
+            if (succesfull == 0){
+               return 1;
+            }
+         }//return 1 if win of player 1 blocked 
       }
    }//end for, horizontal (right to left)check for possible win
+
 return 0; //if no block took place
 }
 
 /**
  * try_block_vertical_x_in_row
  *
- * Function that tries to block x disks verticaly in a connect 4 game if possible
+ * Function that tries to block x disks vertically in a connect 4 game if possible
  *
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked verticaly for the posibility to block x and move is made if possible
+ * @post: the board_model has been checked vertically for the possibility to block x and move is made if possible
  *
  * @return:
  *         1 if move could be done
- *         0 if there was not the possibility of wining    
+ *         0 if there was no possibility of blocking the x in a row of the other player.
  */
 static int try_block_vertical_x_in_row(board_model *boardx, int nb_to_block){
    assert(boardx != NULL);
@@ -384,14 +477,15 @@ static int try_block_vertical_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && ((j - 1) >= 0) && move_is_fair(boardx,(j-1),(i)) ){
-          succesfull = add_pawn(boardx, 2, i);
-           if (succesfull == 0){
-              return 1;
-           }
-        }//return 1 if win of player 1 blocked 
+         if(player_1_count == nb_to_block && ((j - 1) >= 0) && move_is_fair(boardx,(j-1),(i)) ){
+            succesfull = add_pawn(boardx, 2, i);
+            if (succesfull == 0){
+               return 1;
+            }
+         }//return 1 if win of player 1 blocked 
       }
    }//end for, vertical check for possible win
+
 return 0; //if no block took place
 }
 
@@ -407,7 +501,7 @@ return 0; //if no block took place
  *
  * @return:
  *         1 if move could be done
- *         0 if there was not the possibility of wining    
+ *         0 if there was no possibility of blocking the x in a row of the other player.  
  */
 static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
    assert(boardx != NULL);
@@ -424,13 +518,13 @@ static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block &&move_is_fair(boardx,(y-1),(j+1))){
-          succesfull = add_pawn(boardx, 2, j+1);
-           if (succesfull == 0){
-              return 1;
-           }
-        }//return 1 if player 2(IA) blocks a wins 
-        y--;
+         if(player_1_count == nb_to_block &&move_is_fair(boardx,(y-1),(j+1))){
+            succesfull = add_pawn(boardx, 2, j+1);
+            if (succesfull == 0){
+               return 1;
+            }
+         }//return 1 if player 2(IA) blocks a wins 
+      y--;
       }
    }//end for, top left triangle (bottom to top)of matrix has been checked for block
  
@@ -443,13 +537,13 @@ static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && move_is_fair(boardx,(j-1),(y+1))){
-          succesfull = add_pawn(boardx, 2, y+1);
-           if (succesfull == 0){
-              return 1;
-           }
-        }//return 2 if player 2(IA) wins 
-        ++y;
+         if(player_1_count == nb_to_block && move_is_fair(boardx,(j-1),(y+1))){
+            succesfull = add_pawn(boardx, 2, y+1);
+            if (succesfull == 0){
+               return 1;
+            }
+         }//return 2 if player 2(IA) wins 
+      ++y;
       }
    }//end for, bottom right triangle (bottom to top)of matrix has been checked for possible block
     
@@ -463,13 +557,13 @@ static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && move_is_fair(boardx,(j+1),(y-1))){
-          succesfull = add_pawn(boardx, 2, y-1);
-           if (succesfull == 0){
-              return 1;
-           }
-        }//return 2 if player 2(IA) wins 
-        --y;
+         if(player_1_count == nb_to_block && move_is_fair(boardx,(j+1),(y-1))){
+            succesfull = add_pawn(boardx, 2, y-1);
+            if (succesfull == 0){
+               return 1;
+            }
+         }//return 2 if player 2(IA) wins 
+      --y;
       }
    }//end for, bottom right triangle (top to botom)of matrix has been checked for possible block
        
@@ -483,13 +577,13 @@ static int try_block_diagonal1_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && move_is_fair(boardx,(y+1),(j-1))){
-          succesfull = add_pawn(boardx, 2, j-1);
-           if (succesfull == 0){
-              return 1;
-           }
-        }//return 2 if player 2(IA) wins 
-        ++y;
+         if(player_1_count == nb_to_block && move_is_fair(boardx,(y+1),(j-1))){
+            succesfull = add_pawn(boardx, 2, j-1);
+            if (succesfull == 0){
+               return 1;
+            }
+         }//return 2 if player 2(IA) wins 
+      ++y;
       }
    }//end for, top left triangle (top to botom)of matrix has been checked for possible block
       
@@ -507,7 +601,7 @@ return 0; //if no block took place
  *
  * @return:
  *         1 if move could be done
- *         0 if there was not the possibility of wining    
+ *         0 if there was no possibility of blocking the x in a row of the other player.  
  */
 static int try_block_diagonal2_x_in_row(board_model *boardx, int nb_to_block){
    assert(boardx != NULL);
@@ -524,13 +618,13 @@ static int try_block_diagonal2_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && move_is_fair(boardx,(y-1),(j-1)) ){
-          succesfull = add_pawn(boardx, 2, j-1);
-           if (succesfull == 0){
-              return 1;
-           }
-        }//return 2 if player 2(IA) blocks a win 
-        --y;
+         if(player_1_count == nb_to_block && move_is_fair(boardx,(y-1),(j-1)) ){
+            succesfull = add_pawn(boardx, 2, j-1);
+            if (succesfull == 0){
+               return 1;
+            }
+         }//return 2 if player 2(IA) blocks a win 
+      --y;
       }
    }//end for, bottom right triangle (bottom to top)of matrix has been checked for win
 
@@ -543,13 +637,13 @@ static int try_block_diagonal2_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;       
          }
-        if(player_1_count == nb_to_block && move_is_fair(boardx,(j-1),(y-1))){
-          succesfull = add_pawn(boardx, 2, y-1);
-           if (succesfull == 0){
-              return 1;
-           }//return 2 if player 2(IA) blocks win 
-        --y;
-        }
+         if(player_1_count == nb_to_block && move_is_fair(boardx,(j-1),(y-1))){
+            succesfull = add_pawn(boardx, 2, y-1);
+            if (succesfull == 0){
+               return 1;
+            }//return 2 if player 2(IA) blocks win 
+         }
+      --y;
       }
    }//end for, bottom right triangle(bottom to top) of matrix has been checked for win
 
@@ -562,13 +656,13 @@ static int try_block_diagonal2_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;       
          }
-        if(player_1_count == nb_to_block && move_is_fair(boardx,(j+1),(y+1)) ){
-          succesfull = add_pawn(boardx, 2, y+1);
-           if (succesfull == 0){
-              return 1;
-           }//return 2 if player 2(IA) wins 
-        ++y;
-        }
+         if(player_1_count == nb_to_block && move_is_fair(boardx,(j+1),(y+1)) ){
+            succesfull = add_pawn(boardx, 2, y+1);
+            if (succesfull == 0){
+               return 1;
+            }//return 2 if player 2(IA) wins 
+         ++y;
+         }
       }
    }//end for, bottom left triangle(top to bottom) of matrix has been checked for win
    
@@ -581,13 +675,13 @@ static int try_block_diagonal2_x_in_row(board_model *boardx, int nb_to_block){
          }else{
             player_1_count = 0;            
          }
-        if(player_1_count == nb_to_block && move_is_fair(boardx,(j+1),(y+1))){
-          succesfull = add_pawn(boardx, 2, y+1);
-           if (succesfull == 0){
-              return 1;
-           }
-        }//return 2 if player 2(IA) wins 
-        ++y;
+         if(player_1_count == nb_to_block && move_is_fair(boardx,(j+1),(y+1))){
+            succesfull = add_pawn(boardx, 2, y+1);
+            if (succesfull == 0){
+               return 1;
+            }
+         }//return 2 if player 2(IA) wins 
+      ++y;
       }
    }//end for, top right triangle (top to bottom)of matrix has been checked for possible win
 
@@ -603,7 +697,7 @@ return 0;//if no block took place
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: one play has been done on a conectc 4 board.
+ * @post: one random play has been done on a connect 4 board.
  *
  * @return:
  *     1 when move is done
@@ -613,11 +707,13 @@ static int random_play(board_model *boardx){
    
    srand(time(NULL));
    int succesfull = -1;
+
    while(succesfull == -1){
-   succesfull = add_pawn(boardx, 2, rand()%(get_board_nb_columns(boardx)-1));
+      succesfull = add_pawn(boardx, 2, rand()%(get_board_nb_columns(boardx)-1));
    }
-   return 1;
- } 
+
+return 1;
+} 
 
  /**
  * try_to_win
@@ -627,7 +723,7 @@ static int random_play(board_model *boardx){
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked for the posibility to connect 4 and move is made if possible
+ * @post: the board_model has been checked for the possibility to connect 4 and move is made if possible
  *
  * @return:
  *         1 if move could be done
@@ -667,7 +763,7 @@ return 0;
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked for the posibility to block 4 and move is made if possible
+ * @post: the board_model has been checked for the possibility to block 4 and move is made if possible
  *
  * @return:
  *         1 if move could be done
@@ -708,11 +804,11 @@ return 0;
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked for the posibility to connect 3 and move is made if possible
+ * @post: the board_model has been checked for the possibility to connect 3 and move is made if possible
  *
  * @return:
  *         1 if move could be done
- *         0 if there was not the possibility of wining    
+ *         0 if there was not the possibility of connecting 3    
  */
 static int try_to_make_3(board_model *boardx){
    assert(boardx != NULL);
@@ -737,6 +833,7 @@ static int try_to_make_3(board_model *boardx){
    if (do_3){
       return 1;
    }
+   
 return 0;
 }
 
@@ -748,11 +845,11 @@ return 0;
  * @param *boardx, a pointer to a board_model structure.  
  *
  * @pre:  boardx != NULL
- * @post: the board_model has been cheked for the posibility to block 3 and move is made if possible
+ * @post: the board_model has been checked for the possibility to block 3 and move is made if possible
  *
  * @return:
  *         1 if move could be done
- *         0 if there was not any win to block    
+ *         0 if there was not any 3 in a row to block    
  */
 static int try_block_3(board_model *boardx){
    assert(boardx != NULL);
@@ -810,3 +907,4 @@ void IA_play(board_model *boardx){
   
 return;
 }
+

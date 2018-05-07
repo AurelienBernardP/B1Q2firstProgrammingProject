@@ -11,14 +11,125 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
+/**
+ * find_column
+ *
+ * Finds the column of button clicked. 
+ *
+ * @param *button, a pointer to the Gtk button clicked to trigger this function.  
+ * @param data, a gpointer to a GtkWidget array of buttons.
+ * 
+ * @pre: data point to a valid and initialized array of buttons.
+ *
+ * @post: the column of the corresponding button is found.
+ *
+ * @return:
+ *     the number of the corresponding column.
+ *
+ */
+static unsigned short find_column_clicked(board_controler *controler, GtkWidget *button){
+   assert(controler  != NULL && button != NULL);
+
+   unsigned short i = 0;
+   while( i < get_board_nb_columns(controler->bm)){
+      if(controler->buttons[i] == button){
+         return i;
+      }
+      i++;
+   }
+
+return i;
+}
+
+/**
+ * play_turn
+ *
+ * Finds the column of button clicked. 
+ *
+ * @param *boardx, a pointer to a board_model structure.  
+ * @param *bv, a pointer to a board_vue structure.
+ * @param *current_player a pointer to player opaque structure.  
+ * @param column, the number of the column that has been clicked.
+ * @param *pTable, a pointer to a Gtk Table on which images of the disks are attached.
+ *
+ * @pre: *boardx point to a valid and initialized board_model structure.
+ * @pre: *bv point to a valid and initialized board_vue structure.
+ * @pre: *current_player point to a valid and initialized player structure.
+ * @pre: *pTable point to a valid GtkWidget.
+ *
+ * @post: A full turn is played and checked for a winner.  
+ *
+ * @return:
+ *     0 on success
+ *     1 on error
+ */
+static int play_turn(board_model *boardx, GtkWidget *pTable, board_vue *bv, unsigned short column, player* current_player){
+   assert(boardx != NULL && pTable != NULL && bv != NULL && current_player != NULL);
+  
+   int wining_player = 0;
+   int error_code = 0;
+   wining_player = check_win(boardx);
+   if (wining_player){
+      printf("player %d won\n",wining_player );
+   }
+   switch(wining_player){
+      case 1:
+         show_you_won();
+         return 0;
+      case 2:
+         show_you_lose();
+         return 0;
+      default :
+         break;//continue, NOP
+    }
+
+   add_pawn(boardx, 1, column);
+   boardx->player_moves += 1;
+   
+   wining_player = check_win(boardx);
+   switch(wining_player){
+      case 1:
+         error_code = redraw_board(boardx, pTable, bv);
+         change_player_score(current_player, boardx->player_moves );
+         top10_file_gestion(get_path(current_player), current_player);
+         show_you_won();
+         return 0;
+      case 2:
+         show_you_lose( );         
+         return 0;
+      default :
+         break;//continue, NOP
+    }
+   
+   IA_play(boardx);
+  
+   error_code = redraw_board(boardx, pTable, bv);
+   if(error_code){
+      return 1;
+   }
+
+   wining_player = check_win(boardx);
+   switch(wining_player){
+      case 1:
+         show_you_won();
+         return 0;
+      case 2:
+         show_you_lose();
+         return 0;
+      default :
+         break;//continue, NOP
+   }
+
+return 0; 
+}
 
 board_controler *create_board_controler(board_model *Bm, board_vue *Bv, player* current_player ){
    assert(Bm != NULL && Bv != NULL && current_player != NULL );
 
    board_controler *board_c = malloc(sizeof(board_controler));
    if (board_c == NULL){
-   	printf("Error allocating memory space for board controller\n");
-   	return NULL;
+      printf("Error allocating memory space for board controller\n");
+      return NULL;
    }
    board_c->bv = Bv;
    board_c->bm = Bm;
@@ -29,8 +140,8 @@ board_controler *create_board_controler(board_model *Bm, board_vue *Bv, player* 
       return NULL;
    }
    for (int i = 0; i < get_board_nb_columns(Bm); ++i){
-     board_c->buttons[i] =  gtk_button_new_with_label("");
-     g_signal_connect(G_OBJECT(board_c->buttons[i]), "clicked", G_CALLBACK(move_made), board_c);
+      board_c->buttons[i] =  gtk_button_new_with_label("");
+      g_signal_connect(G_OBJECT(board_c->buttons[i]), "clicked", G_CALLBACK(move_made), board_c);
    }
 return board_c;
 }
@@ -71,39 +182,24 @@ void move_made(GtkWidget *button, gpointer data){
    board_controler *controler = (board_controler*)data;
    assert(controler != NULL);
 
-  int error_code = 0;
+   int error_code = 0;
 
-	unsigned short column_of_button = find_column_clicked(controler, button);
-	if (column_of_button == get_board_nb_columns(controler->bm)){
-	   printf("button clicked not found\n");
-	   return;
-	}
+   unsigned short column_of_button = find_column_clicked(controler, button);
+   if (column_of_button == get_board_nb_columns(controler->bm)){
+      printf("button clicked not found\n");
+      return;
+   }
+   if (column_is_full(controler->bm, column_of_button)){
+      return; // nothing done if the column is full
+   }
 
-  if (column_is_full(controler->bm, column_of_button)){
-     return; // nothing done if the column is full
-  }
+   error_code = play_turn(controler->bm, controler->bv->gtk_table,controler->bv, column_of_button, controler->current_player);
+   if (error_code){
+      printf("error when play is made\n");
+      return;    
+   }
 
-    error_code = play_turn(controler->bm, controler->bv->gtk_table,controler->bv, column_of_button, controler->current_player);
-    if (error_code){
-        printf("error when play is made\n");
-        return;    
-    }    
-    return;
-}
-
-unsigned short find_column_clicked(board_controler *controler, GtkWidget *button){
-    assert(controler  != NULL && button != NULL);
-
-    unsigned short i = 0;
-
-    while( i < get_board_nb_columns(controler->bm)){
-
-       if(controler->buttons[i] == button){
-          return i;
-       }
-       i++;
-    }
-	return i;
+return;
 }
 
 void new_game(GtkWidget *button, gpointer data){
@@ -114,72 +210,8 @@ void new_game(GtkWidget *button, gpointer data){
    
    redraw_board(controler->bm, controler->bv->gtk_table, controler->bv);
 
-   new_game_popup( NULL);
+   new_game_popup();
 
-   return;
+return;
 }
 
-int play_turn(board_model *boardx, GtkWidget *pTable, board_vue *bv, unsigned short column, player* current_player){
-   assert(boardx != NULL && pTable != NULL && bv != NULL && current_player != NULL);
-  
-   int wining_player = 0;
-   int error_code = 0;
-   wining_player = check_win(boardx);
-   if (wining_player){
-     printf("player %d won\n",wining_player );
-   }
-   switch(wining_player){
-      case 1:
-          show_you_won(NULL);
-          return 0;
-      case 2:
-         show_you_lose(NULL);
-         return 0;
-      default :
-         break;//continue, NOP
-
-    }
-
-   add_pawn(boardx, 1, column);
-   
-   boardx->player_moves += 1;
-   wining_player = check_win(boardx);
-   if (wining_player){
-     printf("player %d won\n",wining_player );
-   }
-   switch(wining_player){
-      case 1:
-          error_code = redraw_board(boardx, pTable, bv);
-          change_player_score(current_player, boardx->player_moves );
-          top10_file_gestion(get_path(current_player), current_player);
-          show_you_won(NULL );
-          return 0;
-      case 2:
-          show_you_lose( NULL);         
-         return 0;
-      default :
-         break;//continue, NOP
-    }
-   
-   IA_play(boardx);
-  
-   error_code = redraw_board(boardx, pTable, bv);
-   if(error_code){
-      return 1;
-   }
-   wining_player = check_win(boardx);
-   switch(wining_player){
-      case 1:
-          show_you_won(NULL );
-          return 0;
-      case 2:
-         show_you_lose(NULL);
-         return 0;
-      default :
-         break;//continue, NOP
-    }
-     if (wining_player){
-     printf("player %d won\n",wining_player );
-   }
-   return 0; 
-}

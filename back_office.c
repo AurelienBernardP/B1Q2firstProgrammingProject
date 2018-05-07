@@ -13,7 +13,7 @@
 
 
 typedef enum{
-empty, yellow, red,
+   empty, yellow, red,
 }piece_color;
 
 
@@ -30,6 +30,7 @@ void destroy_board(board_model *boardx){
       }
    } 
    free(boardx);
+
 return;
 }
 
@@ -37,13 +38,15 @@ return;
 board_model *init_board(unsigned short rows, unsigned short columns){
    
    if (columns < MIN_BOARD_SIZE || rows < MIN_BOARD_SIZE){
-    printf("dimenssions entered can not be smaller than 4\n");
-    return NULL;
-   }
-   if (columns > MAX_BOARD_SIZE || rows > MAX_BOARD_SIZE){
-      printf("dimenssions entered can not be bigger than 20\n");
+      printf("dimenssions entered can not be smaller than 4\n");
       return NULL;
    }
+
+   if (columns > MAX_BOARD_SIZE || rows > MAX_BOARD_SIZE){
+      printf("dimenssions entered can not be bigger than 25\n");
+      return NULL;
+   }
+
    board_model *boardx = malloc(sizeof(board_model));
    if (boardx == NULL){
       printf("ERROR: board_model could not be created (mem allocation)\n");
@@ -55,19 +58,19 @@ board_model *init_board(unsigned short rows, unsigned short columns){
    boardx->player_moves = 0;
 
    boardx->board_matrix = malloc(boardx->nb_rows*sizeof(unsigned short int*));
-      if(!boardx->board_matrix)
-      {
+   if(!boardx->board_matrix){
+      printf("ERROR: board_model could not be created (mem allocation)\n");
+      return NULL;
+   }
+      
+   for(int r = 0; r < boardx->nb_rows;r++){
+      boardx->board_matrix[r] = calloc(boardx->nb_columns, sizeof(unsigned short));
+      if(!boardx->board_matrix[r]){
          printf("ERROR: board_model could not be created (mem allocation)\n");
          return NULL;
       }
-      for(int r = 0; r < boardx->nb_rows;r++){
-         boardx->board_matrix[r] = calloc(boardx->nb_columns, sizeof(unsigned short));
-         if(!boardx->board_matrix[r])
-         {
-            printf("ERROR: board_model could not be created (mem allocation)\n");
-            return NULL;
-         }
-      }
+   }
+
 return boardx;
 }
 
@@ -79,8 +82,10 @@ void reinitialize_board_model(board_model *boardx){
          boardx->board_matrix[i][j] = 0;
       }
    }
+
    boardx->player_moves = 0;
-   return;
+
+return;
 }
 
 int add_pawn(board_model *boardx, unsigned int player, unsigned short column){
@@ -91,14 +96,30 @@ int add_pawn(board_model *boardx, unsigned int player, unsigned short column){
       --i;
    }
 
-   if (i ==(-1)){
-     return (-1);// column is full
+   if(i ==(-1)){
+      return (-1);// column is full
    }
+
    boardx->board_matrix[i][column] = player;
 
 return 0;
 }
 
+/**
+ * horizontal_check_win
+ *
+ * checks if one of the player has connected 4 pieces horizontaly in a row.
+ *
+ * @param *boardx, a pointer to a board_model structure.
+ * 
+ *
+ * @pre: *boardx pointer to a valid and initialized board_model structure
+ * @post: board_model is unchanged and has been checked for a winner. 
+ *
+ * @return:
+ *     The number of the wining player (1 or 2), or 0 is no player has won yet.
+ * 
+ */
 static int horizontal_check_win(board_model *boardx){
    assert(boardx != NULL);
    
@@ -106,7 +127,6 @@ static int horizontal_check_win(board_model *boardx){
    unsigned short player_2_count = 0;
    
    for (int i = 0; i < boardx->nb_rows; ++i){
-
       player_1_count = 0;
       player_2_count = 0;
       for (int j = 0; j < boardx->nb_columns; ++j){
@@ -124,18 +144,34 @@ static int horizontal_check_win(board_model *boardx){
                player_2_count = 0;
                break;
          }
-        if(player_1_count>=4){
-           return 1;
-        }//return 1 if player 1 wins 
-        if(player_2_count>=4){
-           return 2;
-        }//return 2 if player 2(IA) wins
 
+         if(player_1_count>=4){
+            return 1;
+         }//return 1 if player 1 wins 
+         if(player_2_count>=4){
+            return 2;
+         }//return 2 if player 2(IA) wins
       }
    }//end for, horizontal check
+
 return 0; //after board_model has been checked horizontaly and no player has won yet, 0 returned
 }
 
+/**
+ * vertical_check_win
+ *
+ * checks if one of the player has connected 4 pieces verticaly in a row.
+ *
+ * @param *boardx, a pointer to a board_model structure.
+ * 
+ *
+ * @pre: *boardx pointer to a valid and initialized board_model structure
+ * @post: board_model is unchanged and has been checked for a winner. 
+ *
+ * @return:
+ *     The number of the wining player (1 or 2), or 0 is no player has won yet.
+ * 
+ */
 static int vertical_check_win(board_model *boardx){
    assert(boardx != NULL);
    
@@ -160,17 +196,32 @@ static int vertical_check_win(board_model *boardx){
                player_2_count = 0;
                break;
          }
-        if(player_1_count>=4){
-           return 1;
-        }//return 1 if player 1 wins 
-        if(player_2_count>=4){
-           return 2;
-        }//return 2 if player 2(IA) wins 
+         if(player_1_count>=4){
+            return 1;
+         }//return 1 if player 1 wins 
+         if(player_2_count>=4){
+            return 2;
+         }//return 2 if player 2(IA) wins 
       }
    }//end for, vertical check
 return 0; //board_model has been checked verticaly and no player has won yet, 0 returned
 }
 
+/**
+ * diagonal1_check_win
+ *
+ * checks if one of the player has connected 4 pieces in a row, in positive gradient diagonal .
+ *
+ * @param *boardx, a pointer to a board_model structure.
+ * 
+ *
+ * @pre: *boardx pointer to a valid and initialized board_model structure
+ * @post: board_model is unchanged and has been checked for a winner. 
+ *
+ * @return:
+ *     The number of the wining player (1 or 2), or 0 is no player has won yet.
+ * 
+ */
 static int diagonal1_check_win(board_model *boardx){
    assert(boardx != NULL);
    
@@ -196,14 +247,13 @@ static int diagonal1_check_win(board_model *boardx){
                player_2_count = 0;
                break;
          }
-
-        if(player_1_count>=4){
-           return 1;
-        }//return 1 if player 1 wins 
-        if(player_2_count>=4){
-           return 2;
-        }//return 2 if player 2(IA) wins 
-        y--;
+         if(player_1_count>=4){
+            return 1;
+         }//return 1 if player 1 wins 
+         if(player_2_count>=4){
+            return 2;
+         }//return 2 if player 2(IA) wins 
+         y--;
       }
    }//end for, bottom right triangle of matrix has been checked for win
 
@@ -226,19 +276,34 @@ static int diagonal1_check_win(board_model *boardx){
                player_2_count = 0;
                break;
          }
-        if(player_1_count >= 4){
-           return 1;
-        }//return 1 if player 1 wins 
-        if(player_2_count >= 4){
-           return 2;
-        }//return 2 if player 2(IA) wins 
-        ++y;
+         if(player_1_count >= 4){
+            return 1;
+         }//return 1 if player 1 wins 
+         if(player_2_count >= 4){
+            return 2;
+         }//return 2 if player 2(IA) wins 
+         ++y;
       }
    }//end for, bottom right triangle of matrix has been checked for win
 
 return 0; //no player has won yet
 }//end diagonal 1 check
 
+/**
+ * diagonal2_check_win
+ *
+ * checks if one of the player has connected 4 pieces in a row, in negative gradient diagonal .
+ *
+ * @param *boardx, a pointer to a board_model structure.
+ * 
+ *
+ * @pre: *boardx pointer to a valid and initialized board_model structure
+ * @post: board_model is unchanged and has been checked for a winner. 
+ *
+ * @return:
+ *     The number of the wining player (1 or 2), or 0 is no player has won yet.
+ * 
+ */
 static int diagonal2_check_win(board_model *boardx){
    assert(boardx != NULL);
 
@@ -264,13 +329,13 @@ static int diagonal2_check_win(board_model *boardx){
                player_2_count = 0;
                break;
          }
-        if(player_1_count>=4){
-           return 1;
-        }//return 1 if player 1 wins 
-        if(player_2_count>=4){
-           return 2;
-        }//return 2 if player 2(IA) wins 
-        ++y;
+         if(player_1_count>=4){
+            return 1;
+         }//return 1 if player 1 wins 
+         if(player_2_count>=4){
+            return 2;
+         }//return 2 if player 2(IA) wins 
+         ++y;
       }
    }//end for, top right triangle of matrix has been checked for win
 
@@ -293,13 +358,13 @@ static int diagonal2_check_win(board_model *boardx){
                player_2_count = 0;
                break;
          }
-        if(player_1_count >= 4){
-           return 1;
-        }//return 1 if player 1 wins 
-        if(player_2_count >= 4){
-           return 2;
-        }//return 2 if player 2(IA) wins 
-        y++;
+         if(player_1_count >= 4){
+            return 1;
+         }//return 1 if player 1 wins 
+         if(player_2_count >= 4){
+            return 2;
+         }//return 2 if player 2(IA) wins 
+         y++;
       }
    }//end for, bottom right triangle of matrix has been checked for win
    
@@ -308,21 +373,24 @@ return 0;// if no player has won yet
 
 int check_win(board_model *boardx){
    assert(boardx != NULL);
+   
    int wining_player = 0;
    wining_player = horizontal_check_win(boardx);
    if(wining_player){
       return wining_player;
    }
+
    wining_player = vertical_check_win(boardx);
    if(wining_player){
       return wining_player;
    }
+
    wining_player = diagonal1_check_win(boardx);
    if(wining_player){
       return wining_player;
    }
-   wining_player = diagonal2_check_win(boardx);
 
+   wining_player = diagonal2_check_win(boardx);
 
 return wining_player;
 }
@@ -354,47 +422,7 @@ int column_is_full(board_model *boardx ,unsigned int nb_column){
    if(boardx->board_matrix[0][nb_column] != 0){
       return 1;
    }else{
-    return 0;
-   }
-
-}
-
-int is_there_support(board_model *boardx, int nb_row, int nb_column){
-   assert(boardx != NULL);
-
-   if ((nb_row + 1) > boardx->nb_rows ){
-        return 0; // error, this should not happen
-   }
-   if ((nb_row + 1 ) == boardx->nb_rows){
-        return 1; // the base will hold the disk
-   }
-   
-   if (get_board_disk_value(boardx, (nb_row+1), nb_column) != 0 ){
-      return 1;// there is a disk that will suport an other disk;
-   }
-   return 0;
-
-}
-
-int move_is_in_board(board_model *boardx, int nb_row, int nb_column){
-   assert(boardx != NULL);
-
-   if(nb_row < 0 || nb_row >= get_board_nb_rows(boardx)){
       return 0;
    }
-   if (nb_column < 0 || nb_column >= get_board_nb_columns(boardx)){
-      return 0;
-         }
-   return 1; // if position is inside board, return 1 (True);
-}
-
-int move_is_fair(board_model *boardx, int nb_row, int nb_column){
-   assert(boardx != NULL);
-
-   if(move_is_in_board(boardx, nb_row, nb_column) && is_there_support(boardx, nb_row, nb_column)){
-      if(get_board_disk_value(boardx, nb_row, nb_column) == 0){
-         return 1; //if the intedend move id in a free space inside the board and will be supported to stay in the inteded place.
-      }
-   }
-  return 0;// if one of the criteria is not respected
+return 0;
 }

@@ -5,12 +5,12 @@
 /**
  * IA_play
  *
- * makes one play on in a connect 4 game.
+ * Makes one play in a connect 4 game.
  *
  * @param *boardx, a pointer to a board_model structure.
  *
  * @pre:  boardx != NULL
- * @post: one play has been done on a conectc 4 board.
+ * @post: one play has been done on a connect 4 board.
  *
  * @return:
  *     Void function, no return.
